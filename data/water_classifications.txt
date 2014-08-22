@@ -1,0 +1,39 @@
+Category 1 Attaining all designated uses. Waterbodies will be placed into this 
+Category if, in accordance with the requirements of the CALM, the 
+assessment results indicate that the waterbody is attaining all water quality 
+standards for all designated uses. 
+
+Category 2 Attaining some of the designated uses; and insufficient or no data and 
+information is available to determine if the remaining uses are 
+attained. Waterbodies will be placed in this Category if there are data and 
+information which, in accordance with the CALM, support a 
+determination that some, but not all, uses are attained and attainment 
+status of the remaining uses is unknown because there is insufficient or no 
+data or information. 
+
+Category 3 Insufficient or no data and information are available to determine if 
+any designated use is attained or impaired. Waterbodies will be placed 
+in this Category where the data or information to support an attainment 
+determination for all uses are not sufficient, consistent with the 
+requirements of the CALM. In general, these uses and waterbodies are 
+considered Not Assessed. 
+
+Category 4 Impaired or threatened for one or more designated uses but does not 
+require development of a TMDL. (Three subcategories):
+    A. TMDL has been completed. Waterbodies will be placed in this 
+subcategory once all TMDLs for the waterbody have been developed 
+and approved by EPA. 
+    B. Other pollution control requirements are reasonably expected to 
+result in attainment of the water quality standard in the near 
+future. Waterbodies will be placed in this subcategory where other 
+pollution control requirements are stringent enough to attain 
+applicable water quality standards. 
+    C. Impairment is not caused by a pollutant. Waterbodies will be 
+placed in this subcategory if pollution (e.g., flow) rather than a 
+pollutant causes the impairment.
+
+Category 5 Impaired or threatened for one or more designated uses by a 
+pollutant(s), and requires a TMDL. This Category constitutes the 
+303(d) List of waters impaired or threatened by a pollutant(s) for which 
+one or more TMDL(s) are needed. 
+
