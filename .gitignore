@@ -2,3 +2,9 @@
 *.DS_Store
 *.swp
 ENV
+api/bin/wri
+api/pkg
+api/src/github.com/bmizerany
+api/src/github.com/gorilla
+
+
