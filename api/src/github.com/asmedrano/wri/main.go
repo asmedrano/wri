@@ -8,12 +8,14 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", HomeHandler)
 	r.HandleFunc("/lakes", LakesHandler)
+	r.HandleFunc("/geom", GeomHandler)
 	http.Handle("/", r)
 	fmt.Print("Starting Server...\n")
 	http.ListenAndServe(":8000", nil)
@@ -112,7 +114,7 @@ func buildLakesQuery(m map[string]string) (string, []interface{}) {
 			prefix = "AND"
 		}
 		query += fmt.Sprintf(" %s %s %s $%d", prefix, qm["name"], qm["qtype"], len(vals))
-       
+
 	}
 	return query, vals
 }
@@ -167,6 +169,47 @@ func LakesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 
 }
+
+
+type GeomResource struct {
+    Gid int64
+    Name string
+    Geom string
+}
+
+func GeomHandler(w http.ResponseWriter, r *http.Request) {
+    db := GetDB()
+	defer db.Close()
+	var rows *sql.Rows
+	var err error
+    r.ParseForm()
+    geoms := r.Form["g"]
+    results := []GeomResource{}
+    query:= fmt.Sprintf("SELECT gid, name, ST_AsGeoJSON(geom) FROM lakes WHERE gid IN (%s)", strings.Join(geoms, ","))
+    rows, err = db.Query(query)
+	defer rows.Close()
+	for rows.Next() {
+        g := GeomResource{}
+		if err := rows.Scan(&g.Gid, &g.Name, &g.Geom); err != nil {
+			log.Print(err)
+		}
+        results = append(results, g)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Print(err)
+	}
+
+    js, err := json.Marshal(results)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
 
 // A little stub to connect to our database
 func GetDB() *sql.DB {
