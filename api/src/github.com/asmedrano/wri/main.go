@@ -66,18 +66,82 @@ type LakeResource struct {
 	Cat         string
 }
 
+// Returns a map string of a name and the type of query to use
+func queryType(name string, qtype string) map[string]string {
+	m := map[string]string{
+		"name":  name,
+		"qtype": qtype,
+	}
+	return m
+}
+
+var queryMap = map[string]map[string]string{
+	"n":  queryType("name", "ILIKE"), //name
+	"p":  queryType("pond", "="),          // pond
+	"t":  queryType("trout_stk", "="),     // trout
+	"pa": queryType("pubacc", "="),        // pubacc
+	"br": queryType("boatramp", "="),      //boatramp
+	"c":  queryType("cold", "="),          //cold
+	"i":  queryType("island", "="),
+}
+
+func parseLakesQueryStr(r *http.Request) map[string]string {
+	m := map[string]string{}
+
+	for k, _ := range queryMap {
+		v := r.FormValue(k)
+		if v != "" {
+			m[k] = v
+		}
+	}
+
+	return m
+}
+
+func buildLakesQuery(m map[string]string) (string, []interface{}) {
+	query := ""
+	vals := []interface{}{}
+	prefix := "WHERE"
+	for k, v := range m {
+		qm := queryMap[k]
+		if qm["qtype"] == "ILIKE" {
+            v = "%" + v + "%"
+        }
+		vals = append(vals, v)
+		if len(vals)-1 > 0 {
+			prefix = "AND"
+		}
+		query += fmt.Sprintf(" %s %s %s $%d", prefix, qm["name"], qm["qtype"], len(vals))
+       
+	}
+	return query, vals
+}
+
 func LakesHandler(w http.ResponseWriter, r *http.Request) {
 
-    db := GetDB()
-    defer db.Close()
+	db := GetDB()
+	defer db.Close()
+
+	rQ := parseLakesQueryStr(r)
+	qs, qv := buildLakesQuery(rQ)
+	var rows *sql.Rows
+	var err error
 
 	query := "SELECT gid, objectid, island, name, wbid, acres, pond, trout_stk, pubacc, boatramp, rstrctn, srpw, cold, wqs, cat FROM lakes"
-
+	if qs != "" {
+		query += qs
+	}
 	query += " ORDER BY name"
 
-	rows, err := db.Query(query)
+	if qs == "" {
+		rows, err = db.Query(query)
+	} else {
+		rows, err = db.Query(query, qv...)
+	}
 	defer rows.Close()
+
 	results := []LakeResource{}
+
 	if err != nil {
 		log.Print(err)
 	}
@@ -104,14 +168,12 @@ func LakesHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
 // A little stub to connect to our database
 func GetDB() *sql.DB {
-    connStr := fmt.Sprintf("user=%s dbname=%s host=%s port=%s sslmode=disable", "amedrano", "wildri", "127.0.0.1", "5432")
-    db, err := sql.Open("postgres", connStr)
-    if err != nil {
-        log.Print(err)
-    }
-    return db
+	connStr := fmt.Sprintf("user=%s dbname=%s host=%s port=%s sslmode=disable", "amedrano", "wildri", "127.0.0.1", "5432")
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Print(err)
+	}
+	return db
 }
-
