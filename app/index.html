@@ -1,0 +1,32 @@
+<!doctype html>
+
+<html lang="en" ng-app="wri">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title></title>
+        <link rel="stylesheet" href="static/vendor/leaflet/dist/leaflet.css">
+        <link rel="stylesheet" href="static/vendor/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="static/css/app.css">
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row" ng-controller="MapCtrl">
+                <div class="col-md-12" id="map">
+                
+                </div>
+                <div class="col-md-4" id="controls-box">
+                    <form class="form">
+                        <input type="text" name="" ng-model="name" >
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        var API_URL = "http://localhost:8000";
+    </script>
+    <script src="static/vendor/angular/angular.min.js"></script>
+    <script src="static/vendor/leaflet/dist/leaflet.js"></script>
+    <script src="static/js/app.js"></script>
+</html>
