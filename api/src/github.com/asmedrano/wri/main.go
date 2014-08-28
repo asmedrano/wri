@@ -142,7 +142,7 @@ func LakesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	results := []LakeResource{}
+	results := map[string]LakeResource{}
 
 	if err != nil {
 		log.Print(err)
@@ -152,7 +152,7 @@ func LakesHandler(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&r.Gid, &r.ObjectId, &r.Island, &r.Name, &r.Wbid, &r.Acres, &r.Pond, &r.TroutStk, &r.PubAcc, &r.BoatRamp, &r.Restriction, &r.SRPW, &r.Cold, &r.WQS, &r.Cat); err != nil {
 			log.Print(err)
 		}
-		results = append(results, r)
+		results[fmt.Sprintf("%d", r.Gid)] = r
 	}
 
 	if err := rows.Err(); err != nil {

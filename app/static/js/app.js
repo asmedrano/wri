@@ -3,13 +3,16 @@ var app = angular.module('wri', []);
 app.controller('MapCtrl', function ($scope, $http) {
     $scope.apiURL = window.API_URL;
 
+    $scope.mdiv = document.getElementById("map");
+    $scope.mdiv.style.height = window.innerHeight + "px";
+    $scope.mdiv.style.width = window.innerWidth + "px";
     /*intialize map*/
     $scope.map = L.map('map').setView([41.83, -71.41], 13);
 
-    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
         maxZoom: 18
     }).addTo($scope.map);
-
+    
     $scope.updateGeoms = function() {
         var gids = [];
         var gidsStr = "?g=";
@@ -20,7 +23,7 @@ app.controller('MapCtrl', function ($scope, $http) {
         
         $http({method: 'GET', url: $scope.apiURL + "/geom" + gidsStr}).
         success(function(data, status, headers, config) {
-            // TODO: this could pontentially be a big request 
+            // TODO: this could potentially be a big request 
             // how can I fix it
             var feature = null;
             var layers =[];
@@ -28,6 +31,7 @@ app.controller('MapCtrl', function ($scope, $http) {
                 feature = JSON.parse(data[i].Geom);
                 feature.properties = {
                     name: data[i].Name,
+                    gid: data[i].Gid
                 }
                 layers.push(L.geoJson(feature,{
                     style: {
@@ -48,7 +52,18 @@ app.controller('MapCtrl', function ($scope, $http) {
     }
     
     $scope.featureClkHandler = function(feature, layer) {
-        console.log(feature, layer);
+        var props;
+        layer.on('click', function(e){
+            $scope.map.fitBounds(layer.getBounds());
+            props = e.target.feature.geometry.properties;
+            $scope.lake = $scope.lakes[props.gid.toString()];
+            $scope.$apply();
+        });
+        layer.on('mouseover', function(e){
+            props = e.target.feature.geometry.properties;
+            $scope.lake = $scope.lakes[props.gid.toString()];
+            $scope.$apply();
+        });
     }
 
     $scope.getLakes = function() {
@@ -65,6 +80,8 @@ app.controller('MapCtrl', function ($scope, $http) {
 
        
     $scope.getLakes();
+
+    
 
 
 });
