@@ -10,20 +10,22 @@ app.controller('MapCtrl', function ($scope, $http) {
     $scope.map = L.map('map').setView([41.83, -71.41], 13);
 
     var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    var ridemUrl = "http://maps.edc.uri.edu/arcgis/rest/services/Atlas_imageryBaseMapsEarthCover/2011_RIDEM/MapServer/tile/{z}/{y}/{x}";
 
-    var ridem = L.tileLayer(ridemUrl, { attribution: '', maxZoom: 18});
+    var ridem = L.esri.tiledMapLayer("http://maps.edc.uri.edu/arcgis/rest/services/Atlas_imageryBaseMapsEarthCover/2011_RIDEM/MapServer", {});
     var osm = L.tileLayer(osmUrl, { attribution: '', maxZoom: 18});
     var esri = L.esri.basemapLayer("Gray").addTo($scope.map);
-    var baseMaps = {
+
+    $scope.baseMaps = {
         "OpenStreetMap": osm,
         "RIDEM (hi-rez)": ridem,
         "Esri":esri
     };
 
-    L.control.layers(baseMaps, null, {
-     position:"bottomright"               
-                    
+    $scope.overlays = {};
+
+    $scope.control = L.control.layers($scope.baseMaps, $scope.overlays, {
+        position:"bottomleft",
+        collapsed: false,
     }).addTo($scope.map);
         
     $scope.updateGeoms = function() {
@@ -56,7 +58,7 @@ app.controller('MapCtrl', function ($scope, $http) {
                 }));
             }
             var f = L.featureGroup(layers);
-            f.addTo($scope.map);
+            $scope.control.addOverlay(f, "Lakes and Ponds");
             $scope.map.fitBounds(f.getBounds());
 
             $scope.getAccessPoints();
@@ -109,23 +111,43 @@ app.controller('MapCtrl', function ($scope, $http) {
                 feature = JSON.parse(data[i].Geom);
                 
                 feature.properties = {
-                    Name:data[i].Name,
-                    Restrictions:data[i].Restriction
+                    Name : data[i].Name,
+                    Restrictions :data[i].Restriction,
+                    Park : $scope.capitalizeFirstLetter(data[i].Park),
+                    Type : $scope.toTitleCase(data[i].Type),
+                    Lat : data[i].Lat,
+                    Lon : data[i].Lon,
+                    WaterType : $scope.capitalizeFirstLetter(data[i].Wat_ttp),
                 }
                 layers.push(L.geoJson(feature,{
                     onEachFeature:function(feature, layer){
                         var str = "<b>"+feature.properties.Name+ "</b>"
+                        var latlon = "";
                         if(feature.properties.Restrictions != "") {
-                            str += "<br/><small>Restrictions: "+ feature.properties.Restrictions +"</small>";
+                            str += "<br/><small><b>Restrictions:</b> "+ feature.properties.Restrictions +"</small>";
                         }
+
+                        if(feature.properties.Park != "") {
+                            str += "<br/><small><b>Parking: </b> "+ feature.properties.Park +"</small>";
+                        }
+
+                        if(feature.properties.Type != "") {
+                            str += "<br/><small><b>Acces Type: </b>"+ feature.properties.Type +"</small>";
+                        }
+
+                        if(feature.properties.Type != "") {
+                            str += "<br/><small><b>Water Type: </b>"+ feature.properties.WaterType +"</small>";
+                        }
+                        latlon = feature.properties.Lat.toString() + "," + feature.properties.Lon.toString();
+                        str += "<br/><a target='blank' href='http://maps.google.com/maps?f=q&hl=en&geocode=&q=LATLON&ie=UTF8&z=17&iwloc=addr&om=0'>View On Google Maps</a>".replace("LATLON", latlon )
+
                         layer.bindPopup(str);
 
                     }
                 }));    
             }
             var f = L.featureGroup(layers);
-            f.addTo($scope.map);
-
+            $scope.control.addOverlay(f, "Public Fishing Access Points");
         }).
         error(function(data, status, headers, config) {
             console.log(data, status);
@@ -136,7 +158,13 @@ app.controller('MapCtrl', function ($scope, $http) {
        
     $scope.getLakes();
 
-    
+    $scope.toTitleCase = function(str){
+        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+    }   
+
+    $scope.capitalizeFirstLetter = function(string){
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
 
 
 });
