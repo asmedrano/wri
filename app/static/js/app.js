@@ -18,7 +18,7 @@ app.controller('MapCtrl', function ($scope, $http) {
     $scope.baseMaps = {
         "OpenStreetMap": osm,
         "RIDEM (hi-rez)": ridem,
-        "Esri":esri
+        "ESRI(Gray)":esri
     };
 
     $scope.overlays = {};
@@ -26,6 +26,10 @@ app.controller('MapCtrl', function ($scope, $http) {
     $scope.control = L.control.layers($scope.baseMaps, $scope.overlays, {
         position:"bottomleft",
         collapsed: false,
+    }).addTo($scope.map);
+
+    L.control.scale({
+        position: "bottomright"
     }).addTo($scope.map);
         
     $scope.updateGeoms = function() {
@@ -121,25 +125,25 @@ app.controller('MapCtrl', function ($scope, $http) {
                 }
                 layers.push(L.geoJson(feature,{
                     onEachFeature:function(feature, layer){
-                        var str = "<b>"+feature.properties.Name+ "</b>"
+                        var str = "<h3>"+feature.properties.Name+ "</h3>"
                         var latlon = "";
                         if(feature.properties.Restrictions != "") {
-                            str += "<br/><small><b>Restrictions:</b> "+ feature.properties.Restrictions +"</small>";
+                            str += "<small><b>Restrictions:</b> "+ feature.properties.Restrictions +"</small>";
                         }
 
                         if(feature.properties.Park != "") {
-                            str += "<br/><small><b>Parking: </b> "+ feature.properties.Park +"</small>";
+                            str += "<small><b>Parking: </b> "+ feature.properties.Park +"</small>";
                         }
 
                         if(feature.properties.Type != "") {
-                            str += "<br/><small><b>Acces Type: </b>"+ feature.properties.Type +"</small>";
+                            str += "<small><b>Acces Type: </b>"+ feature.properties.Type +"</small>";
                         }
 
                         if(feature.properties.Type != "") {
-                            str += "<br/><small><b>Water Type: </b>"+ feature.properties.WaterType +"</small>";
+                            str += "<small><b>Water Type: </b>"+ feature.properties.WaterType +"</small>";
                         }
                         latlon = feature.properties.Lat.toString() + "," + feature.properties.Lon.toString();
-                        str += "<br/><a target='blank' href='http://maps.google.com/maps?f=q&hl=en&geocode=&q=LATLON&ie=UTF8&z=17&iwloc=addr&om=0'>View On Google Maps</a>".replace("LATLON", latlon )
+                        str += "<small><a target='blank' href='http://maps.google.com/maps?f=q&hl=en&geocode=&q=LATLON&ie=UTF8&z=17&iwloc=addr&om=0'>View On Google Maps</a></small>".replace("LATLON", latlon )
 
                         layer.bindPopup(str);
 
