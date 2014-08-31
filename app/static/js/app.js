@@ -9,10 +9,23 @@ app.controller('MapCtrl', function ($scope, $http) {
     /*intialize map*/
     $scope.map = L.map('map').setView([41.83, -71.41], 13);
 
-    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-        maxZoom: 18
+    var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    var ridemUrl = "http://maps.edc.uri.edu/arcgis/rest/services/Atlas_imageryBaseMapsEarthCover/2011_RIDEM/MapServer/tile/{z}/{y}/{x}";
+
+    var ridem = L.tileLayer(ridemUrl, { attribution: '', maxZoom: 18});
+    var osm = L.tileLayer(osmUrl, { attribution: '', maxZoom: 18});
+    var esri = L.esri.basemapLayer("Gray").addTo($scope.map);
+    var baseMaps = {
+        "OpenStreetMap": osm,
+        "RIDEM (hi-rez)": ridem,
+        "Esri":esri
+    };
+
+    L.control.layers(baseMaps, null, {
+     position:"bottomright"               
+                    
     }).addTo($scope.map);
-    
+        
     $scope.updateGeoms = function() {
         var gids = [];
         var gidsStr = "?g=";
@@ -35,7 +48,7 @@ app.controller('MapCtrl', function ($scope, $http) {
                 }
                 layers.push(L.geoJson(feature,{
                     style: {
-                        "color": "blue",
+                        "color": "#1E74FF",
                         "weight": 1,
                         "opacity": .8
                     },
@@ -102,7 +115,9 @@ app.controller('MapCtrl', function ($scope, $http) {
                 layers.push(L.geoJson(feature,{
                     onEachFeature:function(feature, layer){
                         var str = "<b>"+feature.properties.Name+ "</b>"
-                        str += "<br/><small>Restrictions: "+ feature.properties.Restrictions +"</small>";
+                        if(feature.properties.Restrictions != "") {
+                            str += "<br/><small>Restrictions: "+ feature.properties.Restrictions +"</small>";
+                        }
                         layer.bindPopup(str);
 
                     }
