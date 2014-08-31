@@ -21,7 +21,7 @@ app.controller('MapCtrl', function ($scope, $http) {
         }
         gidsStr += gids.join("&g=");
         
-        $http({method: 'GET', url: $scope.apiURL + "/geom" + gidsStr}).
+        $http({method: 'GET', url: $scope.apiURL + "/lakes/geom" + gidsStr}).
         success(function(data, status, headers, config) {
             // TODO: this could potentially be a big request 
             // how can I fix it
@@ -45,6 +45,8 @@ app.controller('MapCtrl', function ($scope, $http) {
             var f = L.featureGroup(layers);
             f.addTo($scope.map);
             $scope.map.fitBounds(f.getBounds());
+
+            $scope.getAccessPoints();
             
         }).
         error(function(data, status, headers, config) {
@@ -64,6 +66,12 @@ app.controller('MapCtrl', function ($scope, $http) {
             $scope.lake = $scope.lakes[props.gid.toString()];
             $scope.$apply();
         });
+        layer.on('mouseout', function(e){
+            $scope.lake = null;
+            
+            $scope.$apply();
+        });
+
     }
 
     $scope.getLakes = function() {
@@ -76,6 +84,38 @@ app.controller('MapCtrl', function ($scope, $http) {
         error(function(data, status, headers, config) {
             console.log(data, status);
         });
+    }
+
+    $scope.getAccessPoints = function() {
+        $http({method: 'GET', url: $scope.apiURL + "/access"}).
+        success(function(data, status, headers, config) {
+            $scope.access = data;
+            var layers =[];
+            var feature;
+            for(var i in data) {
+                feature = JSON.parse(data[i].Geom);
+                
+                feature.properties = {
+                    Name:data[i].Name,
+                    Restrictions:data[i].Restriction
+                }
+                layers.push(L.geoJson(feature,{
+                    onEachFeature:function(feature, layer){
+                        var str = "<b>"+feature.properties.Name+ "</b>"
+                        str += "<br/><small>Restrictions: "+ feature.properties.Restrictions +"</small>";
+                        layer.bindPopup(str);
+
+                    }
+                }));    
+            }
+            var f = L.featureGroup(layers);
+            f.addTo($scope.map);
+
+        }).
+        error(function(data, status, headers, config) {
+            console.log(data, status);
+        });
+
     }
 
        
