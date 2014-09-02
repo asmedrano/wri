@@ -176,6 +176,7 @@ app.controller('MapCtrl', function ($scope, $http) {
             var f = L.featureGroup(layers);
             $scope.mapLayers['pa'] = f;
             $scope.control.addOverlay(f, "Public Fishing Access");
+            $scope.map.addLayer(f);
         }).
         error(function(data, status, headers, config) {
             console.log(data, status);
@@ -196,6 +197,12 @@ app.controller('MapCtrl', function ($scope, $http) {
             $scope.lp_search_params["t"] = "Y";
             $scope.access_search_params["t"] = "Y";
         }
+
+        if($scope.boat_rmp != undefined && $scope.boat_rmp == true) {
+            $scope.lp_search_params["br"] = "Yes";
+            $scope.access_search_params["br"] = "Y";
+        }
+
         $scope.getLakes();
     }
 

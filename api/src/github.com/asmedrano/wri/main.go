@@ -236,6 +236,7 @@ var accessQueryMap = map[string]map[string]string{
 	"n":  queryType("name", "ILIKE"), //name
 	"wt": queryType("wat_ttp", "="),  // water type
 	"t":  queryType("rstrctn", "ILIKE"), //we can infer trout stk from here
+	"br":  queryType("type", "ILIKE"), //we can infer boat ramp from here by sear
 }
 
 // TODO:Dry this up
@@ -249,6 +250,12 @@ func buildAccessQuery(m map[string]string) (string, []interface{}) {
             // To find trout stock we have to actually search for "stocked with trout"
             if v == "Y" {
                 v = "stocked with trout"
+            }
+        }
+        if k == "br" {
+            // To find boat ramps  we have to search for "Boat"
+            if v == "Y" {
+                v = "Boat"
             }
         }
 
