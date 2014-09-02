@@ -37,3 +37,23 @@ html, body, #map {
 .leaflet-popup small {
     display:block;
 }
+
+#controls-box {
+    font-family: 'Source Sans Pro', sans-serif;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+    background: #fff;
+    border-radius: 5px;
+    position:absolute;
+    bottom:10px;
+    left:210px;
+    padding:10px;
+}
+
+#controls-box .form-group{
+    margin-bottom:0px;
+}
+
+#controls-box .checkbox {
+    display: inline-block;
+    width: 110px;
+}

@@ -2,12 +2,14 @@ var app = angular.module('wri', []);
 
 app.controller('MapCtrl', function ($scope, $http) {
     $scope.apiURL = window.API_URL;
-
     $scope.mdiv = document.getElementById("map");
     $scope.mdiv.style.height = window.innerHeight + "px";
     $scope.mdiv.style.width = window.innerWidth + "px";
+    $scope.lp_search_params = {};
+    $scope.access_search_params = {};
     /*intialize map*/
     $scope.map = L.map('map').setView([41.83, -71.41], 13);
+    $scope.mapLayers = {};
 
     var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
@@ -61,8 +63,15 @@ app.controller('MapCtrl', function ($scope, $http) {
                     onEachFeature:$scope.featureClkHandler
                 }));
             }
+            var lp = $scope.getOverlayLayer($scope.control,"Lakes and Ponds");
+            if(lp != null){
+                $scope.control.removeLayer(lp.layer);
+                $scope.map.removeLayer($scope.mapLayers["lp"]);
+            }
             var f = L.featureGroup(layers);
+            $scope.mapLayers["lp"] = f;
             $scope.control.addOverlay(f, "Lakes and Ponds");
+            $scope.map.addLayer(f);
             $scope.map.fitBounds(f.getBounds());
 
             $scope.getAccessPoints();
@@ -87,14 +96,17 @@ app.controller('MapCtrl', function ($scope, $http) {
         });
         layer.on('mouseout', function(e){
             $scope.lake = null;
-            
             $scope.$apply();
         });
 
     }
 
     $scope.getLakes = function() {
-        $http({method: 'GET', url: $scope.apiURL + "/lakes"}).
+        $http({
+            method: 'GET', 
+            url: $scope.apiURL + "/lakes",
+            params: $scope.lp_search_params
+        }).
         success(function(data, status, headers, config) {
             $scope.lakes = data;
             // always fetch geoms when lakes are updated;
@@ -106,7 +118,11 @@ app.controller('MapCtrl', function ($scope, $http) {
     }
 
     $scope.getAccessPoints = function() {
-        $http({method: 'GET', url: $scope.apiURL + "/access"}).
+        $http({
+            method: 'GET',
+            url: $scope.apiURL + "/access",
+            params:$scope.access_search_params
+        }).
         success(function(data, status, headers, config) {
             $scope.access = data;
             var layers =[];
@@ -136,7 +152,7 @@ app.controller('MapCtrl', function ($scope, $http) {
                         }
 
                         if(feature.properties.Type != "") {
-                            str += "<small><b>Acces Type: </b>"+ feature.properties.Type +"</small>";
+                            str += "<small><b>Access Type: </b>"+ feature.properties.Type +"</small>";
                         }
 
                         if(feature.properties.Type != "") {
@@ -150,13 +166,37 @@ app.controller('MapCtrl', function ($scope, $http) {
                     }
                 }));    
             }
+
+            var lp = $scope.getOverlayLayer($scope.control,"Public Fishing Access");
+            if(lp != null){
+                $scope.control.removeLayer(lp.layer);
+                $scope.map.removeLayer($scope.mapLayers["pa"]);
+            }
+
             var f = L.featureGroup(layers);
-            $scope.control.addOverlay(f, "Public Fishing Access Points");
+            $scope.mapLayers['pa'] = f;
+            $scope.control.addOverlay(f, "Public Fishing Access");
         }).
         error(function(data, status, headers, config) {
             console.log(data, status);
         });
 
+    }
+
+    $scope.searchMap = function(e) {
+        $scope.lp_search_params = {}; // always reset search params
+        $scope.access_search_params = {};
+
+        if($scope.search_name != undefined && $scope.search_name != "") {
+            $scope.lp_search_params["n"] = $scope.search_name;
+            $scope.access_search_params["n"] = $scope.search_name;
+        }
+
+        if($scope.trt_stk != undefined && $scope.trt_stk == true) {
+            $scope.lp_search_params["t"] = "Y";
+            $scope.access_search_params["t"] = "Y";
+        }
+        $scope.getLakes();
     }
 
        
@@ -169,6 +209,17 @@ app.controller('MapCtrl', function ($scope, $http) {
     $scope.capitalizeFirstLetter = function(string){
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
+    
+    $scope.getOverlayLayer = function(control, name) {
+        var layer = null;
+        for(var l in control._layers){
+            if(control._layers[l].name == name){
+                
+                layer = control._layers[l];
+                break;
+            }
+        }
 
-
+        return layer;
+    }
 });

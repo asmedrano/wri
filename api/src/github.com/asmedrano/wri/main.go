@@ -91,6 +91,7 @@ func parseQueryStr(r *http.Request, qm map[string]map[string]string) map[string]
 	return m
 }
 
+/* a map the specifies the type of query to perform*/
 var lakesQueryMap = map[string]map[string]string{
 	"n":  queryType("name", "ILIKE"),  //name
 	"p":  queryType("pond", "="),      // pond
@@ -102,10 +103,11 @@ var lakesQueryMap = map[string]map[string]string{
 }
 
 func buildLakesQuery(m map[string]string) (string, []interface{}) {
+    /*Actually builds the query we pass into SQL*/
 	query := ""
 	vals := []interface{}{}
 	prefix := "WHERE"
-	for k, v := range m {
+	for k, v := range m { // v is the value coming from the GET params
 		qm := lakesQueryMap[k]
 		if qm["qtype"] == "ILIKE" {
 			v = "%" + v + "%"
@@ -233,6 +235,7 @@ func LakesGeomHandler(w http.ResponseWriter, r *http.Request) {
 var accessQueryMap = map[string]map[string]string{
 	"n":  queryType("name", "ILIKE"), //name
 	"wt": queryType("wat_ttp", "="),  // water type
+	"t":  queryType("rstrctn", "ILIKE"), //we can infer trout stk from here
 }
 
 // TODO:Dry this up
@@ -240,7 +243,15 @@ func buildAccessQuery(m map[string]string) (string, []interface{}) {
 	query := ""
 	vals := []interface{}{}
 	prefix := "WHERE"
-	for k, v := range m {
+	for k, v := range m { // again v is the value coming from the 
+        // Some special value modifiers
+        if k == "t" {
+            // To find trout stock we have to actually search for "stocked with trout"
+            if v == "Y" {
+                v = "stocked with trout"
+            }
+        }
+
 		qm := accessQueryMap[k]
 		if qm["qtype"] == "ILIKE" {
 			v = "%" + v + "%"
