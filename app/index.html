@@ -34,8 +34,15 @@
                                 <label><input type="checkbox"  ng-model="slt_wtr"> Salt Water </label>
                             </div>
 
-                            <input type="submit" class="btn btn-default" value="Search">
+
                         </div>
+
+                        <div class="form-group" id="calm-select">
+                            <label<span class="help-block">RIDEM <a target="blank" href="http://www.dem.ri.gov/programs/benviron/water/quality/pdf/finlcalm.pdf">CALM</a> Category (Lakes &amp; Ponds only) <small><a target="blank" href="http://www.dem.ri.gov/pubs/303d/303d12.pdf">See also </a></small></span></label>
+                            <select class="form-control" ng-model="w_cat" ng-options="t as t for t in w_cat_types"></select>
+                        </div>
+
+                        <input type="submit" class="btn btn-default" value="Search">
                     </form>
                 </div>
 

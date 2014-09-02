@@ -100,6 +100,7 @@ var lakesQueryMap = map[string]map[string]string{
 	"br": queryType("boatramp", "="),  //boatramp
 	"c":  queryType("cold", "="),      //cold
 	"i":  queryType("island", "="),
+    "cat": queryType("cat", "="), //category
 }
 
 func buildLakesQuery(m map[string]string) (string, []interface{}) {

@@ -10,6 +10,7 @@ app.controller('MapCtrl', function ($scope, $http) {
     /*intialize map*/
     $scope.map = L.map('map').setView([41.83, -71.41], 13);
     $scope.mapLayers = {};
+    $scope.w_cat_types = ["1", "2", "3", "4A", "4B", "4C", "5"];
 
     var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
@@ -191,19 +192,39 @@ app.controller('MapCtrl', function ($scope, $http) {
         if($scope.search_name != undefined && $scope.search_name != "") {
             $scope.lp_search_params["n"] = $scope.search_name;
             $scope.access_search_params["n"] = $scope.search_name;
+            
+            $scope.getLakes();
         }
 
         if($scope.trt_stk != undefined && $scope.trt_stk == true) {
             $scope.lp_search_params["t"] = "Y";
             $scope.access_search_params["t"] = "Y";
+            $scope.getLakes();
+
         }
 
         if($scope.boat_rmp != undefined && $scope.boat_rmp == true) {
             $scope.lp_search_params["br"] = "Yes";
             $scope.access_search_params["br"] = "Y";
+            $scope.getLakes();
         }
 
-        $scope.getLakes();
+        if($scope.pub_acc != undefined && $scope.pub_acc == true) {
+            $scope.lp_search_params["pa"] = "Yes";
+            $scope.getLakes();
+        }
+        if($scope.slt_wtr != undefined && $scope.slt_wtr == true) {
+            // we only need to get access points for now
+            $scope.access_search_params["wt"] = "salt";
+            $scope.getLakes();
+            
+        }
+
+        if($scope.w_cat != undefined) {
+            $scope.lp_search_params["cat"] = $scope.w_cat;
+            $scope.getLakes();
+        }
+
     }
 
        
