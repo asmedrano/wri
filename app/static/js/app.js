@@ -29,7 +29,30 @@ app.controller('MapCtrl', function ($scope, $http) {
     $scope.control = L.control.layers($scope.baseMaps, $scope.overlays, {
         position:"bottomleft",
         collapsed: false,
-    }).addTo($scope.map);
+    });
+    $scope.control.addTo($scope.map);
+
+    // add events for the overlays
+    $scope.map.on('overlayadd', function(layer) {
+        if(layer.name == "Public Fishing Access") {
+            $scope.pub_fish_acc_available = true;
+        }
+        if(layer.name == "Lakes and Ponds") {
+            $scope.lakes_ponds_available = true;
+        }
+        $scope.$apply();
+    });
+
+    $scope.map.on('overlayremove', function(layer) {
+        if(layer.name == "Public Fishing Access") {
+            $scope.pub_fish_acc_available = false;
+            
+        }
+        if(layer.name == "Lakes and Ponds") {
+            $scope.lakes_ponds_available = false;
+        }
+        $scope.$apply();
+    });
 
     L.control.scale({
         position: "bottomright"
