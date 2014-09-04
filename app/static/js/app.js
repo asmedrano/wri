@@ -1,6 +1,6 @@
 var app = angular.module('wri', []);
 
-app.controller('MapCtrl', function ($scope, $http) {
+app.controller('MapCtrl', function ($scope, $http, $timeout) {
     $scope.apiURL = window.API_URL;
     $scope.mdiv = document.getElementById("map");
     $scope.mdiv.style.height = window.innerHeight + "px";
@@ -40,24 +40,28 @@ app.controller('MapCtrl', function ($scope, $http) {
         if(layer.name == "Lakes and Ponds") {
             $scope.lakes_ponds_available = true;
         }
-        $scope.$apply();
+        $timeout(function(){
+            $scope.$apply();
+        }, 100);
+
     });
 
     $scope.map.on('overlayremove', function(layer) {
         if(layer.name == "Public Fishing Access") {
             $scope.pub_fish_acc_available = false;
-            
         }
         if(layer.name == "Lakes and Ponds") {
             $scope.lakes_ponds_available = false;
         }
-        $scope.$apply();
+        $timeout(function(){
+            $scope.$apply();
+        }, 100);
     });
 
     L.control.scale({
         position: "bottomright"
     }).addTo($scope.map);
-        
+
     $scope.updateGeoms = function() {
         var gids = [];
         var gidsStr = "?g=";
@@ -98,7 +102,6 @@ app.controller('MapCtrl', function ($scope, $http) {
             $scope.map.addLayer(f);
             $scope.map.fitBounds(f.getBounds());
 
-            
         }).
         error(function(data, status, headers, config) {
         });
@@ -212,6 +215,7 @@ app.controller('MapCtrl', function ($scope, $http) {
         });
 
     }
+
     $scope.hideLakesLayer = function(){
         // uncheck lakes layer
         var e = angular.element(".leaflet-control-layers-selector")
@@ -230,45 +234,58 @@ app.controller('MapCtrl', function ($scope, $http) {
                 .children("input:checked").click();
     }
 
-
-    $scope.searchMap = function(e) {
+    $scope.searchMapLakes = function(e) {
         $scope.lp_search_params = {}; // always reset search params
-        $scope.access_search_params = {};
 
         if($scope.search_name != undefined && $scope.search_name != "") {
             $scope.lp_search_params["n"] = $scope.search_name;
-            $scope.access_search_params["n"] = $scope.search_name;
         }
 
         if($scope.trt_stk != undefined && $scope.trt_stk == true) {
             $scope.lp_search_params["t"] = "Y";
-            $scope.access_search_params["t"] = "Y";
         }
 
         if($scope.boat_rmp != undefined && $scope.boat_rmp == true) {
             $scope.lp_search_params["br"] = "Yes";
-            $scope.access_search_params["br"] = "Y";
         }
 
         if($scope.pub_acc != undefined && $scope.pub_acc == true) {
             $scope.lp_search_params["pa"] = "Yes";
         }
+
+        if($scope.w_cat != undefined) {
+            $scope.lp_search_params["cat"] = $scope.w_cat;
+        }
+
+        $scope.getLakes();
+    }
+
+    $scope.searchMapAccessPoints = function(e) {
+        $scope.access_search_params = {};
+
+        if($scope.search_name != undefined && $scope.search_name != "") {
+            $scope.access_search_params["n"] = $scope.search_name;
+        }
+
+        if($scope.trt_stk != undefined && $scope.trt_stk == true) {
+            $scope.access_search_params["t"] = "Y";
+        }
+
+        if($scope.boat_rmp != undefined && $scope.boat_rmp == true) {
+            $scope.access_search_params["br"] = "Y";
+        }
+
         if($scope.slt_wtr != undefined && $scope.slt_wtr == true) {
-            // we only need to get access points for now
             $scope.access_search_params["wt"] = "salt";
         }
 
         if($scope.w_cat != undefined) {
             $scope.lp_search_params["cat"] = $scope.w_cat;
         }
-        $scope.getLakes();
-        $scope.getAccessPoints();
 
+        $scope.getAccessPoints();
     }
 
-       
-    $scope.getLakes();
-    $scope.getAccessPoints();
 
     $scope.toTitleCase = function(str){
         return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
@@ -290,4 +307,7 @@ app.controller('MapCtrl', function ($scope, $http) {
 
         return layer;
     }
+    // intial data fetch
+    $scope.getLakes();
+    $scope.getAccessPoints();
 });
