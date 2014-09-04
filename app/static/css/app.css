@@ -55,7 +55,7 @@ html, body, #map {
 
 #controls-box .checkbox {
     display: inline-block;
-    width: 110px;
+    width: 130px;
 }
 
 #calm-select label{
@@ -63,4 +63,7 @@ html, body, #map {
 }
 #calm-select select{
     width:100px;
+}
+#calm-select small{
+    display:block;
 }

@@ -75,7 +75,6 @@ app.controller('MapCtrl', function ($scope, $http) {
             $scope.map.addLayer(f);
             $scope.map.fitBounds(f.getBounds());
 
-            $scope.getAccessPoints();
             
         }).
         error(function(data, status, headers, config) {
@@ -118,7 +117,10 @@ app.controller('MapCtrl', function ($scope, $http) {
         });
     }
 
-    $scope.getAccessPoints = function() {
+    $scope.getAccessPoints = function(fitbounds) {
+        if(fitbounds == undefined) {
+            fitbounds = false;
+        }
         $http({
             method: 'GET',
             url: $scope.apiURL + "/access",
@@ -178,12 +180,33 @@ app.controller('MapCtrl', function ($scope, $http) {
             $scope.mapLayers['pa'] = f;
             $scope.control.addOverlay(f, "Public Fishing Access");
             $scope.map.addLayer(f);
+            if(fitbounds) {
+                $scope.map.fitBounds(f.getBounds());
+            }
         }).
         error(function(data, status, headers, config) {
             console.log(data, status);
         });
 
     }
+    $scope.hideLakesLayer = function(){
+        // uncheck lakes layer
+        var e = angular.element(".leaflet-control-layers-selector")
+                .parent()
+                .children("span:contains('Lakes and Ponds')")
+                .parent()
+                .children("input:checked").click();
+    }
+
+    $scope.hideAccessPointsLayer = function(){
+        // uncheck lakes layer
+        var e = angular.element(".leaflet-control-layers-selector")
+                .parent()
+                .children("span:contains('Public Fishing Access')")
+                .parent()
+                .children("input:checked").click();
+    }
+
 
     $scope.searchMap = function(e) {
         $scope.lp_search_params = {}; // always reset search params
@@ -192,43 +215,37 @@ app.controller('MapCtrl', function ($scope, $http) {
         if($scope.search_name != undefined && $scope.search_name != "") {
             $scope.lp_search_params["n"] = $scope.search_name;
             $scope.access_search_params["n"] = $scope.search_name;
-            
-            $scope.getLakes();
         }
 
         if($scope.trt_stk != undefined && $scope.trt_stk == true) {
             $scope.lp_search_params["t"] = "Y";
             $scope.access_search_params["t"] = "Y";
-            $scope.getLakes();
-
         }
 
         if($scope.boat_rmp != undefined && $scope.boat_rmp == true) {
             $scope.lp_search_params["br"] = "Yes";
             $scope.access_search_params["br"] = "Y";
-            $scope.getLakes();
         }
 
         if($scope.pub_acc != undefined && $scope.pub_acc == true) {
             $scope.lp_search_params["pa"] = "Yes";
-            $scope.getLakes();
         }
         if($scope.slt_wtr != undefined && $scope.slt_wtr == true) {
             // we only need to get access points for now
             $scope.access_search_params["wt"] = "salt";
-            $scope.getLakes();
-            
         }
 
         if($scope.w_cat != undefined) {
             $scope.lp_search_params["cat"] = $scope.w_cat;
-            $scope.getLakes();
         }
+        $scope.getLakes();
+        $scope.getAccessPoints();
 
     }
 
        
     $scope.getLakes();
+    $scope.getAccessPoints();
 
     $scope.toTitleCase = function(str){
         return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
