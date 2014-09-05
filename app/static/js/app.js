@@ -135,8 +135,11 @@ app.controller('MapCtrl', function ($scope, $http, $timeout) {
         }).
         success(function(data, status, headers, config) {
             $scope.lakes = data;
+            $scope.lakes_count = Object.keys($scope.lakes).length
             // always fetch geoms when lakes are updated;
-            $scope.updateGeoms();
+            if($scope.lakes_count > 0){
+                $scope.updateGeoms();
+            }
         }).
         error(function(data, status, headers, config) {
             console.log(data, status);
@@ -234,22 +237,23 @@ app.controller('MapCtrl', function ($scope, $http, $timeout) {
                 .children("input:checked").click();
     }
 
-    $scope.searchMapLakes = function(e) {
+    $scope.searchLakesMap = function() {
         $scope.lp_search_params = {}; // always reset search params
+        
 
-        if($scope.search_name != undefined && $scope.search_name != "") {
-            $scope.lp_search_params["n"] = $scope.search_name;
+        if($scope.lakes_search_name != undefined && $scope.lakes_search_name != "") {
+            $scope.lp_search_params["n"] = $scope.lakes_search_name;
         }
 
-        if($scope.trt_stk != undefined && $scope.trt_stk == true) {
+        if($scope.lakes_trt_stk != undefined && $scope.lakes_trt_stk == true) {
             $scope.lp_search_params["t"] = "Y";
         }
 
-        if($scope.boat_rmp != undefined && $scope.boat_rmp == true) {
+        if($scope.lakes_boat_rmp != undefined && $scope.lakes_boat_rmp == true) {
             $scope.lp_search_params["br"] = "Yes";
         }
 
-        if($scope.pub_acc != undefined && $scope.pub_acc == true) {
+        if($scope.lakes_pub_acc != undefined && $scope.lakes_pub_acc == true) {
             $scope.lp_search_params["pa"] = "Yes";
         }
 
@@ -260,27 +264,23 @@ app.controller('MapCtrl', function ($scope, $http, $timeout) {
         $scope.getLakes();
     }
 
-    $scope.searchMapAccessPoints = function(e) {
+    $scope.searchAccessPointsMap = function(e) {
         $scope.access_search_params = {};
 
-        if($scope.search_name != undefined && $scope.search_name != "") {
-            $scope.access_search_params["n"] = $scope.search_name;
+        if($scope.acc_search_name != undefined && $scope.acc_search_name != "") {
+            $scope.access_search_params["n"] = $scope.acc_search_name;
         }
 
-        if($scope.trt_stk != undefined && $scope.trt_stk == true) {
+        if($scope.acc_trt_stk != undefined && $scope.acc_trt_stk == true) {
             $scope.access_search_params["t"] = "Y";
         }
 
-        if($scope.boat_rmp != undefined && $scope.boat_rmp == true) {
+        if($scope.acc_boat_rmp != undefined && $scope.acc_boat_rmp == true) {
             $scope.access_search_params["br"] = "Y";
         }
 
-        if($scope.slt_wtr != undefined && $scope.slt_wtr == true) {
+        if($scope.acc_slt_wtr != undefined && $scope.acc_slt_wtr == true) {
             $scope.access_search_params["wt"] = "salt";
-        }
-
-        if($scope.w_cat != undefined) {
-            $scope.lp_search_params["cat"] = $scope.w_cat;
         }
 
         $scope.getAccessPoints();

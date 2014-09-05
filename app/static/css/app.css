@@ -46,8 +46,8 @@ html, body, #map {
     position:absolute;
     padding:10px;
     z-index:1000;
-    bottom:10px;
-    left:180px;
+    bottom: 159px;
+    left: 9px;
 }
 
 #controls-box .form-group{

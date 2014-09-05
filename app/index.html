@@ -15,41 +15,43 @@
             <div class="row" ng-controller="MapCtrl">
                 <div class="col-md-12" id="map"></div>
                 <div class="controls-box" ng-show="pub_fish_acc_available || lakes_ponds_available" ng-class="{double:pub_fish_acc_available && lakes_ponds_available}"> 
-                    <form role="form" ng-submit="searchMap($event)" id="lake-pond" ng-show="lakes_ponds_available">
-                        <h4> Lakes and Ponds </h4>
+                    <form role="form" id="lake-pond" ng-show="lakes_ponds_available">
+                        <h4> Lakes and Ponds ({{lakes_count}})</h4>
                         <div class="form-group">
-                            <input type="text" class="form-control" name="" ng-model="search_name" placeholder="Ex: Woonasqatucket River">
+                            <input type="text" class="form-control" ng-change="searchLakesMap()" name="" ng-model="lakes_search_name" placeholder="Ex: Woonasqatucket River">
                             <div class="checkbox">
-                                <label> <input type="checkbox" ng-model="trt_stk">Trout Stocked </label>
+                                <label> <input type="checkbox" ng-change="searchLakesMap()" ng-model="lakes_trt_stk">Trout Stocked </label>
                             </div>
                             <div class="checkbox">
-                                <label><input type="checkbox" ng-model="pub_acc">Public Access </label>
+                                <label><input type="checkbox" ng-change="searchLakesMap()" ng-model="lakes_pub_acc">Public Access </label>
                             </div>
                             <div class="checkbox">
-                                <label><input type="checkbox" ng-model="boat_rmp">Boat Ramp</label>
+                                <label><input type="checkbox" ng-change="searchLakesMap()" ng-model="lakes_boat_rmp">Boat Ramp</label>
                             </div>
                         </div>
 
                         <div class="form-group" id="calm-select">
                             <label<span class="help-block">RIDEM <a target="blank" href="http://www.dem.ri.gov/programs/benviron/water/quality/pdf/finlcalm.pdf">CALM</a> <small><a target="blank" href="http://www.dem.ri.gov/pubs/303d/303d12.pdf">More Info </a></small></span></label>
-                            <select class="form-control" ng-model="w_cat" ng-options="t as t for t in w_cat_types"></select>
+                            <select class="form-control" ng-model="w_cat" ng-change="searchLakesMap()" ng-options="t as t for t in w_cat_types">
+                                <option value="">---</option>
+                            </select>
                         </div>
                     </form>
 
 
-                 <form role="form" ng-submit="searchMap($event)" id="pub-acc" ng-show="pub_fish_acc_available">
-                        <h4> Public Fishing Access </h4>
+                 <form role="form" id="pub-acc" ng-show="pub_fish_acc_available">
+                     <h4> Public Fishing Access ({{access.length}})</h4>
                         <div class="form-group">
-                            <input type="text" class="form-control" name="" ng-model="search_name" placeholder="Ex: Woonasqatucket River">
+                            <input type="text" class="form-control" name="" ng-change="searchAccessPointsMap()" ng-model="acc_search_name" placeholder="Ex: Woonasqatucket River">
                             <div class="checkbox">
-                                <label> <input type="checkbox" ng-model="trt_stk">Trout Stocked </label>
+                                <label> <input type="checkbox"  ng-change="searchAccessPointsMap()"  ng-model="acc_trt_stk">Trout Stocked </label>
                             </div>
                             
                             <div class="checkbox">
-                                <label><input type="checkbox" ng-model="boat_rmp">Boat Ramp</label>
+                                <label><input type="checkbox"  ng-change="searchAccessPointsMap()"  ng-model="acc_boat_rmp">Boat Ramp</label>
                             </div>
                             <div class="checkbox">
-                                <label><input type="checkbox"  ng-model="slt_wtr"> Salt Water Access </label>
+                                <label><input type="checkbox"   ng-change="searchAccessPointsMap()" ng-model="acc_slt_wtr"> Salt Water Access </label>
                             </div>
                         </div>
                     </form>
