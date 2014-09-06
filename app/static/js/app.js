@@ -1,6 +1,6 @@
 var app = angular.module('wri', []);
 
-app.controller('MapCtrl', function ($scope, $http, $timeout) {
+app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.apiURL = window.API_URL;
     $scope.mdiv = document.getElementById("map");
     $scope.mdiv.style.height = window.innerHeight + "px";
@@ -11,6 +11,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout) {
     $scope.map = L.map('map').setView([41.83, -71.41], 13);
     $scope.mapLayers = {};
     $scope.w_cat_types = ["1", "2", "3", "4A", "4B", "4C", "5"];
+    $scope.typing = null;
 
     var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
@@ -235,6 +236,30 @@ app.controller('MapCtrl', function ($scope, $http, $timeout) {
                 .children("span:contains('Public Fishing Access')")
                 .parent()
                 .children("input:checked").click();
+    }
+
+    $scope.nameSearchText = function(t) {
+        var acc_was;
+        var lp_was;
+        if($scope.typing == null) {
+            // start a timer
+            $scope.typing = $interval(function() {
+                if($scope.lakes_search_name != lp_was) {
+                    lp_was = $scope.lakes_search_name;
+                    acc_was = $scope.acc_search_name;
+                }else{
+                    // stop the timer and do the search
+                    $interval.cancel($scope.typing);
+                    $scope.typing = null;
+                    if(t == "lakes_ponds") {
+                        $scope.searchLakesMap();
+                    }else if(t == "fish_acc") {
+                        $scope.searchAccessPointsMap();
+                    }
+                    
+                }
+            }, 400);
+        }   
     }
 
     $scope.searchLakesMap = function() {

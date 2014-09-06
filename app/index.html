@@ -18,7 +18,7 @@
                     <form role="form" id="lake-pond" ng-show="lakes_ponds_available">
                         <h4> Lakes and Ponds ({{lakes_count}})</h4>
                         <div class="form-group">
-                            <input type="text" class="form-control" ng-change="searchLakesMap()" name="" ng-model="lakes_search_name" placeholder="Ex: Woonasqatucket River">
+                            <input type="text" class="form-control" ng-change="nameSearchText('lakes_ponds')" name="" ng-model="lakes_search_name" placeholder="Ex: Woonasqatucket River">
                             <div class="checkbox">
                                 <label> <input type="checkbox" ng-change="searchLakesMap()" ng-model="lakes_trt_stk">Trout Stocked </label>
                             </div>
@@ -42,7 +42,7 @@
                  <form role="form" id="pub-acc" ng-show="pub_fish_acc_available">
                      <h4> Public Fishing Access ({{access.length}})</h4>
                         <div class="form-group">
-                            <input type="text" class="form-control" name="" ng-change="searchAccessPointsMap()" ng-model="acc_search_name" placeholder="Ex: Woonasqatucket River">
+                            <input type="text" class="form-control" name="" ng-change="nameSearchText('fish_acc')" ng-model="acc_search_name" placeholder="Ex: Woonasqatucket River">
                             <div class="checkbox">
                                 <label> <input type="checkbox"  ng-change="searchAccessPointsMap()"  ng-model="acc_trt_stk">Trout Stocked </label>
                             </div>
