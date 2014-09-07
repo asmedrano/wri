@@ -79,7 +79,13 @@ form#lake-pond{
 #calm-select label{
     width:250px;
 }
+
 #calm-select select{
     width:100px;
+}
+
+.navbar {
+    margin-bottom:0px;
+
 }
 
