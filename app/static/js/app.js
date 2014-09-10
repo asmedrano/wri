@@ -33,6 +33,8 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     });
     $scope.control.addTo($scope.map);
 
+
+
     // add events for the overlays
     $scope.map.on('overlayadd', function(layer) {
         if(layer.name == "Public Fishing Access") {

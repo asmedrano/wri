@@ -86,6 +86,20 @@ form#lake-pond{
 
 .navbar {
     margin-bottom:0px;
+    background: rgb(59, 65, 73);
+    border: none;
+    border-radius: 0;
+    font-family: 'Source Sans Pro', sans-serif;
+    border-bottom: 2px solid #e3e3e3;
+}
 
+.navbar-default .navbar-brand {
+    color:  rgb(204, 214, 216);
+    font-size:20px;
+}
+
+.navbar-brand small{
+    font-weight:200;
+    font-size:20px;
 }
 
