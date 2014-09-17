@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"os"
 )
 
 func main() {
@@ -380,7 +381,11 @@ func AccessHandler(w http.ResponseWriter, r *http.Request) {
 
 // A little stub to connect to our database
 func GetDB() *sql.DB {
-	connStr := fmt.Sprintf("user=%s dbname=%s host=%s port=%s sslmode=disable", "amedrano", "wildri", "127.0.0.1", "5432")
+    dbUser := os.Getenv("WRI_DB_USER")
+    dbName := os.Getenv("WRI_DB_NAME")
+    dbHost := os.Getenv("WRI_DB_HOST")
+
+	connStr := fmt.Sprintf("user=%s dbname=%s host=%s port=%s sslmode=disable", dbUser, dbName, dbHost, "5432") // i think 5432 is safe to assume
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Print(err)
