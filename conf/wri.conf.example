@@ -1,0 +1,11 @@
+description "WildRI"
+author      "Angel Medrano"
+ 
+start on (local-filesystems and net-device-up)
+stop on runlevel [!2345]
+setuid wildri
+env WRI_DB_USER=wildri
+env WRI_DB_HOST=localhost
+env WRI_DB_NAME=wildri
+respawn
+exec /home/wildri/api/bin/wri
