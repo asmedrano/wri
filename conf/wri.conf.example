@@ -4,7 +4,7 @@ author      "Angel Medrano"
 start on (local-filesystems and net-device-up)
 stop on runlevel [!2345]
 setuid wildri
-env WRI_DB_USER="asmedrano"
+env WRI_DB_USER="wildri"
 env WRI_DB_HOST="127.0.0.1"
 env WRI_DB_NAME="wildri"
 respawn
