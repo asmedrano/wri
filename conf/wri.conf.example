@@ -8,4 +8,4 @@ env WRI_DB_USER=wildri
 env WRI_DB_HOST=localhost
 env WRI_DB_NAME=wildri
 respawn
-exec /home/wildri/api/bin/wri
+exec /home/wildri/wri/api/bin/wri
