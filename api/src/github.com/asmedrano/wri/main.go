@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "github.com/bmizerany/pq"
+	_ "github.com/lib/pq"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -382,10 +382,11 @@ func AccessHandler(w http.ResponseWriter, r *http.Request) {
 // A little stub to connect to our database
 func GetDB() *sql.DB {
     dbUser := os.Getenv("WRI_DB_USER")
+    dbPass := os.Getenv("WRI_DB_PASS")
     dbName := os.Getenv("WRI_DB_NAME")
     dbHost := os.Getenv("WRI_DB_HOST")
 
-	connStr := fmt.Sprintf("user=%s dbname=%s host=%s port=%s sslmode=disable", dbUser, dbName, dbHost, "5432") // i think 5432 is safe to assume
+	connStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable", dbUser, dbPass, dbName, dbHost, "5432") // i think 5432 is safe to assume
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Print(err)

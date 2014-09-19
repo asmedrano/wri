@@ -4,7 +4,7 @@
 ENV
 api/bin/wri
 api/pkg
-api/src/github.com/bmizerany
+api/src/github.com/lib
 api/src/github.com/gorilla
 
 
