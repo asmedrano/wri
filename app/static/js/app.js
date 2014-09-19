@@ -1,5 +1,11 @@
 var app = angular.module('wri', []);
 
+app.config(['$httpProvider', function($httpProvider) {
+        $httpProvider.defaults.useXDomain = true;
+        delete $httpProvider.defaults.headers.common['X-Requested-With'];
+    }
+]);
+
 app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.apiURL = window.API_URL;
     $scope.mdiv = document.getElementById("map");
@@ -32,7 +38,6 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
         collapsed: false,
     });
     $scope.control.addTo($scope.map);
-
 
 
     // add events for the overlays

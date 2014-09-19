@@ -134,6 +134,9 @@ func LakesHandler(w http.ResponseWriter, r *http.Request) {
 	var rows *sql.Rows
 	var err error
 
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+
 	query := "SELECT gid, objectid, island, name, wbid, acres, pond, trout_stk, pubacc, boatramp, rstrctn, srpw, cold, wqs, cat FROM lakes"
 	if qs != "" {
 		query += qs
@@ -170,8 +173,7 @@ func LakesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-Type", "application/json")
+
 	w.Write(js)
 
 }
@@ -187,6 +189,10 @@ func LakesGeomHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	var rows *sql.Rows
 	var err error
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+
 	r.ParseForm()
 	geoms := r.Form["g"]
 	results := []GeomResource{}
@@ -210,8 +216,6 @@ func LakesGeomHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
 }
 
@@ -337,6 +341,10 @@ func AccessHandler(w http.ResponseWriter, r *http.Request) {
 	qs, qv := buildAccessQuery(rQ)
 	var rows *sql.Rows
 	var err error
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+
 	query := "SELECT gid, id, name, rmp_cns, rmp_cnd, park, rstrctn, uni, type, wat_ttp, lat, lon, ownership, ST_AsGeoJSON(geom) FROM fish_access"
 	if qs != "" {
 		query += qs
@@ -374,8 +382,6 @@ func AccessHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
 }
 
