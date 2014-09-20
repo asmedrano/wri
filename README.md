@@ -2,6 +2,9 @@ wri
 ===
 
 TODO:
-* Add: Indexes on Data
-* Add: Branding
+* Loading Lakes geom takes too long
+* About Page
+* Mobile UI
+* Ads strategy 
+* window resize
 
