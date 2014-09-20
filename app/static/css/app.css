@@ -6,24 +6,17 @@ html, body, #map {
     height: 100%;
 }
 
-#info-box{
-    position: absolute;
-    top: 10px;
-    right: 10px;
+.wri-pu{
     font-family: 'Source Sans Pro', sans-serif;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-    background: #fff;
-    border-radius: 5px;
-    
 }
 
-#info-box h1 {
+.wri-pu h1 {
     margin-bottom:10px;
     font-weight:200;
     margin-top:6px;
 }
 
-#info-box h3{
+.wri-pu h3{
     margin-top:5px;
 }
 

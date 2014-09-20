@@ -65,18 +65,6 @@
 
                 </div>
 
-                <div class="col-md-2" id="info-box" ng-show='lake'>
-                    <h1>{{lake.Name}}</h1>
-                    <h5>Acres: {{lake.Acres}} </h5>
-                    <h5 ng-show="lake.PubAcc == 'Y' || lake.PubAcc == 'Yes'">Public Access: Yes</h5>
-                    <h5 ng-show="lake.PubAcc != 'Y' && lake.PubAcc != 'Yes'">Public Access: No</h5>
-                    <h5 ng-show="lake.TroutStk == 'Y' || lake.TroutStk == 'Yes'">Trout Stocked: Yes</h5>
-                    <h5 ng-show="lake.TroutStk != 'Y' && lake.TroutStk != 'Yes'">Trout Stocked: No</h5>
-                    <h5 ng-show="lake.BoatRamp == 'Y' || lake.BoatRamp == 'Yes'">Boat Ramp: Yes</h5>
-                    <h5 ng-show="lake.BoatRamp != 'Y' && lake.BoatRamp != 'Yes'">Boat Ramp: No</h5>
-                    <h5> Restrictions: {{lake.Restriction}} </h5>
-                    
-                </div>
             </div>
         </div>
     </body>

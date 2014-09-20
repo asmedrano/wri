@@ -116,23 +116,42 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     }
     
     $scope.featureClkHandler = function(feature, layer) {
-        var props;
+        var props = $scope.lakes[feature.properties.gid.toString()];
+
+        var popUpStr = "";
+        popUpStr += "<h3>" + props.Name + "</h3>";
+        popUpStr += "<small><b>Acres: </b>" + props.Acres +  "</small>";
+
+        if(props.PubAcc == 'Y' || props.PubAcc == 'Yes') {
+            popUpStr += "<small><b>Public Access: </b>Yes</small>";
+        }
+        
+        if(props.PubAcc != 'Y' && props.PubAcc != 'Yes'){
+           popUpStr += "<small><b>Public Access: </b>No</small>"
+
+        }    
+
+        if(props.TroutStk == 'Y' || props.TroutStk == 'Yes'){
+            popUpStr += "<small><b>Trout Stocked:</b> Yes</small>";
+        }
+
+        if(props.TroutStk != 'Y' && props.TroutStk != 'Yes') {
+            popUpStr += "<small><b>Trout Stocked:</b> No</small>";
+        }
+        if(props.BoatRamp == 'Y' || props.BoatRamp == 'Yes'){
+            popUpStr += "<small><b>Boat Ramp:</b> Yes</small>";
+        }
+
+        if(props.BoatRamp != 'Y' && props.BoatRamp != 'Yes'){
+            popUpStr += "<small><b>Boat Ramp: No</b></small>";
+        }
+        popUpStr += "<small><b>Restrictions:</b> " + props.Restriction + "</small>";
+
+        layer.bindPopup(popUpStr);
         layer.on('click', function(e){
             $scope.map.fitBounds(layer.getBounds());
-            props = e.target.feature.geometry.properties;
-            $scope.lake = $scope.lakes[props.gid.toString()];
             $scope.$apply();
         });
-        layer.on('mouseover', function(e){
-            props = e.target.feature.geometry.properties;
-            $scope.lake = $scope.lakes[props.gid.toString()];
-            $scope.$apply();
-        });
-        layer.on('mouseout', function(e){
-            $scope.lake = null;
-            $scope.$apply();
-        });
-
     }
 
     $scope.getLakes = function() {
