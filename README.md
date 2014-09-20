@@ -6,5 +6,5 @@ TODO:
 * About Page
 * Mobile UI
 * Ads strategy 
-* Meta Data
+* window resize
 
