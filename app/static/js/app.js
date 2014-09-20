@@ -342,16 +342,20 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     // intial data fetch
     $scope.resizeMap = function() {
         angular.element("#map").css({
-            height:window.innerHeight - angular.element(".navbar").height()
+            height: window.innerHeight - angular.element(".navbar").height(),
+            width: window.innerWidth
         
         });
     }
     $scope.resizeMap();
     $scope.getLakes();
     $scope.getAccessPoints();
+    
+    angular.element(document).ready(function(){
+        angular.element( window ).resize(function() {
 
-    angular.element( window ).resize(function() {
-        $scope.resizeMap();
+            $scope.resizeMap();
+        });
     });
 
 });
