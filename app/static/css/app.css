@@ -31,6 +31,11 @@ html, body, #map {
     display:block;
 }
 
+
+.leaflet-control-layers-base label, .leaflet-control-layers-overlays label{
+    font-weight:normal;
+    width:163px;
+}
 .controls-box {
     font-family: 'Source Sans Pro', sans-serif;
     box-shadow: 0 1px 5px rgba(0,0,0,0.4);
@@ -43,25 +48,27 @@ html, body, #map {
     left: 9px;
 }
 
+
 #controls-box .form-group{
     margin-bottom:0px;
 }
 
 .controls-box form {
     display: block;
-    float: left;
-    width: 250px;
-    height:240px;
+
+}
+
+.controls-box form h4 {
+    font-size:14px;
 
 }
 
 form#lake-pond{
-    margin-right:20px;
+    margin-bottom:20px;
 }
 
 .double form#lake-pond{
-    padding-right:20px;
-    border-right:thin dashed goldenrod;
+    border-bottom:thin dashed goldenrod;
 }
 
 #controls-box .checkbox {

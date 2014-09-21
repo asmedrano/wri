@@ -14,7 +14,8 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.lp_search_params = {};
     $scope.access_search_params = {};
     /*intialize map*/
-    $scope.map = L.map('map').setView([41.83, -71.41], 13);
+    $scope.map = L.map('map',{zoomControl: false }).setView([41.83, -71.41], 13);
+    new L.Control.Zoom({ position: 'topright' }).addTo($scope.map);
     $scope.mapLayers = {};
     $scope.w_cat_types = ["1", "2", "3", "4A", "4B", "4C", "5"];
     $scope.typing = null;
@@ -35,7 +36,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
     $scope.control = L.control.layers($scope.baseMaps, $scope.overlays, {
         position:"bottomleft",
-        collapsed: false,
+        collapsed: true,
     });
     $scope.control.addTo($scope.map);
 
@@ -359,8 +360,14 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
         angular.element("#map").css({
             height: window.innerHeight - angular.element(".navbar").height(),
             width: window.innerWidth
-        
         });
+
+        try{
+            $scope.map.fitBounds($scope.mapLayers['lp'].getBounds());
+        }catch(e){
+            //..pass
+        }
+
     }
     $scope.resizeMap();
     $scope.getLakes();

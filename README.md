@@ -6,5 +6,5 @@ TODO:
 * About Page
 * Mobile UI
 * Ads strategy 
-* window resize
-
+* enable specific cors
+* minify on deploy
