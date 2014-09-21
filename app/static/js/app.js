@@ -148,10 +148,6 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
         popUpStr += "<small><b>Restrictions:</b> " + props.Restriction + "</small>";
 
         layer.bindPopup(popUpStr);
-        layer.on('click', function(e){
-            $scope.map.fitBounds(layer.getBounds());
-            $scope.$apply();
-        });
     }
 
     $scope.getLakes = function() {
