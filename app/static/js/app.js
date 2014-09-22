@@ -77,7 +77,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.updateGeoms = function() {
         $scope.gids = [];
         $scope.loadedGeoms = 0;
-        var chunkSize = 20;
+        var chunkSize = 100;
         var chunks = [];
         var chunk;
 

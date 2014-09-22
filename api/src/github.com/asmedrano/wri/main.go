@@ -182,6 +182,7 @@ type GeomResource struct {
 	Gid  int64
 	Name string
 	Geom string
+	Centroid string
 }
 
 func LakesGeomHandler(w http.ResponseWriter, r *http.Request) {
@@ -196,12 +197,12 @@ func LakesGeomHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	geoms := r.Form["g"]
 	results := []GeomResource{}
-	query := fmt.Sprintf("SELECT gid, name, ST_AsGeoJSON(geom) FROM lakes WHERE gid IN (%s)", strings.Join(geoms, ","))
+	query := fmt.Sprintf("SELECT gid, name, ST_AsGeoJSON(geom), ST_AsGeoJSON(ST_Centroid(geom)) as centroid FROM lakes WHERE gid IN (%s)", strings.Join(geoms, ","))
 	rows, err = db.Query(query)
 	defer rows.Close()
 	for rows.Next() {
 		g := GeomResource{}
-		if err := rows.Scan(&g.Gid, &g.Name, &g.Geom); err != nil {
+		if err := rows.Scan(&g.Gid, &g.Name, &g.Geom, &g.Centroid); err != nil {
 			log.Print(err)
 		}
 		results = append(results, g)
