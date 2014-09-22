@@ -13,6 +13,8 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.mdiv.style.width = window.innerWidth + "px";
     $scope.lp_search_params = {};
     $scope.access_search_params = {};
+    $scope.loadedGeoms = 0;
+    $scope.gids = [];
     /*intialize map*/
     $scope.map = L.map('map',{zoomControl: false }).setView([41.83, -71.41], 13);
     new L.Control.Zoom({ position: 'topright' }).addTo($scope.map);
@@ -36,8 +38,9 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
     $scope.control = L.control.layers($scope.baseMaps, $scope.overlays, {
         position:"bottomleft",
-        collapsed: true,
+        collapsed: false,
     });
+
     $scope.control.addTo($scope.map);
 
 
@@ -72,7 +75,8 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     }).addTo($scope.map);
 
     $scope.updateGeoms = function() {
-        var gids = [];
+        $scope.gids = [];
+        $scope.loadedGeoms = 0;
         var chunkSize = 20;
         var chunks = [];
         var chunk;
@@ -85,14 +89,14 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
         var f = L.featureGroup([]);
         $scope.map.addLayer(f);
         $scope.mapLayers["lp"] = f;
-        $scope.control.addOverlay(f, "Lakes and Ponds");
 
         for(var l in $scope.lakes) {
-            gids.push($scope.lakes[l].Gid);
+            $scope.gids.push($scope.lakes[l].Gid);
         }
+        $scope.gidsLen = $scope.gids.length;
         // make chunks for geoms request
-        for(var i=0; i<gids.length; i+=chunkSize){
-            chunk=gids.slice(i, i+chunkSize);
+        for(var i=0; i<$scope.gids.length; i+=chunkSize){
+            chunk = $scope.gids.slice(i, i+chunkSize);
             chunks.push(chunk);
         }
         
@@ -103,6 +107,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
             $http({method: 'GET', url: $scope.apiURL + "/lakes/geom" + gidsStr}).
             success(function(data, status, headers, config) {
                 var feature = null;
+                $scope.loadedGeoms += data.length;
                 for(var i in data) {
                     feature = JSON.parse(data[i].Geom);
                     feature.properties = {
@@ -117,6 +122,12 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                         },
                         onEachFeature:$scope.featureClkHandler
                     }));
+                }
+
+                if($scope.loadedGeoms == $scope.gidsLen) {
+                    $scope.control.addOverlay($scope.mapLayers['lp'], "Lakes and Ponds");
+                    $scope.lakes_ponds_available = true;
+
                 }
 
             }).
@@ -259,6 +270,14 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                 .children("span:contains('Lakes and Ponds')")
                 .parent()
                 .children("input:checked").click();
+    }
+    $scope.showLakesLayer = function(){
+        // uncheck lakes layer
+        var e = angular.element(".leaflet-control-layers-selector")
+                .parent()
+                .children("span:contains('Lakes and Ponds')")
+                .parent()
+                .children("input").click();
     }
 
     $scope.hideAccessPointsLayer = function(){
