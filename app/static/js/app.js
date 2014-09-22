@@ -73,47 +73,56 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
     $scope.updateGeoms = function() {
         var gids = [];
-        var gidsStr = "?g=";
+        var chunkSize = 20;
+        var chunks = [];
+        var chunk;
+
+        var lp = $scope.getOverlayLayer($scope.control,"Lakes and Ponds");
+        if(lp != null){
+            $scope.control.removeLayer(lp.layer);
+            $scope.map.removeLayer($scope.mapLayers["lp"]);
+        }
+        var f = L.featureGroup([]);
+        $scope.map.addLayer(f);
+        $scope.mapLayers["lp"] = f;
+        $scope.control.addOverlay(f, "Lakes and Ponds");
+
         for(var l in $scope.lakes) {
             gids.push($scope.lakes[l].Gid);
         }
-        gidsStr += gids.join("&g=");
+        // make chunks for geoms request
+        for(var i=0; i<gids.length; i+=chunkSize){
+            chunk=gids.slice(i, i+chunkSize);
+            chunks.push(chunk);
+        }
         
-        $http({method: 'GET', url: $scope.apiURL + "/lakes/geom" + gidsStr}).
-        success(function(data, status, headers, config) {
-            // TODO: this could potentially be a big request 
-            // how can I fix it
-            var feature = null;
-            var layers =[];
-            for(var i in data) {
-                feature = JSON.parse(data[i].Geom);
-                feature.properties = {
-                    name: data[i].Name,
-                    gid: data[i].Gid
+        for(var i in chunks) {
+            var gidsStr = "?g=";
+            gidsStr += chunks[i].join("&g=");
+            
+            $http({method: 'GET', url: $scope.apiURL + "/lakes/geom" + gidsStr}).
+            success(function(data, status, headers, config) {
+                var feature = null;
+                for(var i in data) {
+                    feature = JSON.parse(data[i].Geom);
+                    feature.properties = {
+                        name: data[i].Name,
+                        gid: data[i].Gid
+                    }
+                    $scope.mapLayers['lp'].addLayer(L.geoJson(feature,{
+                        style: {
+                            "color": "#1E74FF",
+                            "weight": 1,
+                            "opacity": .8
+                        },
+                        onEachFeature:$scope.featureClkHandler
+                    }));
                 }
-                layers.push(L.geoJson(feature,{
-                    style: {
-                        "color": "#1E74FF",
-                        "weight": 1,
-                        "opacity": .8
-                    },
-                    onEachFeature:$scope.featureClkHandler
-                }));
-            }
-            var lp = $scope.getOverlayLayer($scope.control,"Lakes and Ponds");
-            if(lp != null){
-                $scope.control.removeLayer(lp.layer);
-                $scope.map.removeLayer($scope.mapLayers["lp"]);
-            }
-            var f = L.featureGroup(layers);
-            $scope.mapLayers["lp"] = f;
-            $scope.control.addOverlay(f, "Lakes and Ponds");
-            $scope.map.addLayer(f);
-            $scope.map.fitBounds(f.getBounds());
 
-        }).
-        error(function(data, status, headers, config) {
-        });
+            }).
+            error(function(data, status, headers, config) {
+            });
+        }
     }
     
     $scope.featureClkHandler = function(feature, layer) {
