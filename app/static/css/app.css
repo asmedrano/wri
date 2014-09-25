@@ -103,3 +103,11 @@ form#lake-pond{
     font-size:20px;
 }
 
+#about-wrap {
+    font-family: 'Source Sans Pro', sans-serif;
+
+}
+.navbar-right.navbar-nav>li>a {
+    color:#fff;
+
+}

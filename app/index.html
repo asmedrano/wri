@@ -12,11 +12,15 @@
     </head>
     <body>
         <nav class="navbar navbar-default" role="navigation">
-            <div class="container-fluid">
+            <div class="collapse navbar-collapse">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="#">Rhode Island <small>Fisheries</small></a>
+                        <a class="navbar-brand" href="#">Rhode Island <small>Fisheries</small></a>
                 </div>
-            </div>
+
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/about.html">About</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse --> 
         </nav>
         <div class="container-fluid">
             <div class="row" ng-controller="MapCtrl">
