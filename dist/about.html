@@ -1,5 +1,28 @@
-{% extends "base.html" %}
-{% block body %}
+<!doctype html>
+<html lang="en" ng-app="wri">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Rhode Island Fisheries</title>
+        <meta name="description" content="A Searchable Map of fishing locations in Rhode Island">
+        <link rel="stylesheet" href="static/vendor/leaflet/dist/leaflet.css">
+        <link rel="stylesheet" href="static/vendor/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="static/css/app.css">
+        <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400' rel='stylesheet' type='text/css'>
+    </head>
+    <body>
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="collapse navbar-collapse">
+                <div class="navbar-header">
+                        <a class="navbar-brand" href="/">Rhode Island <small>Fisheries</small></a>
+                </div>
+
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/about.html">About</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse --> 
+        </nav>
+        
         <div class="container" id="about-wrap">
             <div class="row">
                 <div class="col-md-12">
@@ -16,4 +39,19 @@
                 </div>
             </div>
         </div>
-{% endblock %}
+
+    
+    </body>
+    
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-54930458-1', 'auto');
+        ga('send', 'pageview');
+
+    </script>
+    
+</html>
