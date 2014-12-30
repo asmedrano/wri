@@ -103,11 +103,20 @@ form#lake-pond{
     font-size:20px;
 }
 
-#about-wrap {
+.page-wrap {
     font-family: 'Source Sans Pro', sans-serif;
 
 }
 .navbar-right.navbar-nav>li>a {
     color:#fff;
 
+}
+
+table td[colspan]{
+    background:rgb(229, 229, 229);
+}
+
+table thead {
+    background:rgb(103, 103, 103);
+    color:#fff;
 }
