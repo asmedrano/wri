@@ -5,9 +5,9 @@ https://github.com/asmedrano/jinjastar
 
 
 TODO:
-* About Page
 * Mobile UI
-* Ads strategy 
+* Enable Google Ads 
 * enable specific cors
 * minify on deploy
-
+* Single Search
+* Add Rivers and streams
