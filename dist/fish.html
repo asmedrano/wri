@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en" ng-app="wri">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Rhode Island Fisheries</title>
+        <meta name="description" content="Information on fishing in Rhode Island">
+        <link rel="stylesheet" href="static/vendor/leaflet/dist/leaflet.css">
+        <link rel="stylesheet" href="static/vendor/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="static/css/app.css">
+        <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400' rel='stylesheet' type='text/css'>
+    </head>
+    <body>
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="collapse navbar-collapse">
+                <div class="navbar-header">
+                        <a class="navbar-brand" href="/">Rhode Island <small>Fisheries</small></a>
+                </div>
+
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/fish.html">Fish Species</a></li>
+                    <li><a href="/resources.html">Angler's Resources</a></li>
+                    <li><a href="/about.html">About</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse --> 
+        </nav>
+        
+        <div class="container page-wrap">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1>Fish Species of Rhode Island</h1>
+                    <p> Below is a list Fish species found in Rhode Island waters group by the species family</p>
+
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th colspan=2>Family</th>
+                            </tr>
+                            <tr>
+                                <th>Name</th>
+                                <th>Record</th>
+                            </tr>
+                        <tbody>
+                            <tr><td colspan=2>Lampreys</td></tr>
+
+                            <tr>
+                                <td>American brook lamprey</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Sea lamprey</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Freshwater Eels</td></tr>
+                            <tr>
+                                <td>American Eel</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Anchovies</td></tr>
+                            <tr>
+                                <td>Bay Anchovy</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Herrings</td></tr>
+                            <tr>
+                                <td>Blueback Herring</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Hickory Shad</td>
+                                <td>n/a</td>
+                            </tr>
+
+                            <tr>
+                                <td>Alewife</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>American Shad</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Atlantic Menhayden</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Gizzard Shad</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Carps and Minnows</td></tr>
+
+                            <tr>
+                                <td>Goldfish</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Common Carp</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Common Shiner</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Golden Shiner</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Bridle Shiner</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Blacknose Dace</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Longnose Dace</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Fallfish</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Suckers</td></tr>
+                            <tr>
+                                <td>White Sucker</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Creek Chubsucker</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>North American Catfishes</td></tr>
+                            <tr>
+                                <td>White Catfish</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Yellow Bullhead</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Brown Bullhead</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Pikes</td></tr>
+                            <tr>
+                                <td>Redfin Pickrel</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Chain Pickrel</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Northern Pike</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Smelts</td></tr>
+                            <tr>
+                                <td>Rainbow Smelt</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Trout and Salmon</td></tr>
+                            <tr>
+                                <td>Rainbow Trout</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Brown Trout</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Brook Trout</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Atlantic Salmon</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Cods</td></tr>
+                             <tr>
+                                <td>Atlantic Tomcod</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Mullets</td></tr>
+                            <tr>
+                                <td>White Mullet</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>New World Silversides</td></tr>
+                            <tr>
+                                <td>Atlantic Silverside</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Inland Silverside</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Needlefishes</td></tr>
+                            <tr>
+                                <td>Atlantic Needlefish</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Topminnows</td></tr>
+                            <tr>
+                                <td>Banded killifish</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Striped killifish</td>
+                                <td>n/a</td>
+                            </tr>
+
+                            <tr>
+                                <td>Rainwater killifish</td>
+                                <td>n/a</td>
+                            </tr>
+
+                            <tr>
+                                <td>Mummichog</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Pupfishes</td></tr>
+                            <tr>
+                                <td>Sheepshead minnow</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Sticklebacks</td></tr>
+                            <tr>
+                                <td>Fourspine Stickleback</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Threespine Stickleback</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Ninespine Stickleback</td>
+                                <td>n/a</td>
+                            </tr>
+
+                            <tr><td colspan=2>Pipefishes</td></tr>
+                            <tr>
+                                <td>Northern Pipefish</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Sea Robins</td></tr>
+                            <tr>
+                                <td>Northern Sea Robin</td>
+                                <td>n/a</td>
+                            </tr>
+
+                            <tr><td colspan=2>Temperate Basses</td></tr>
+                            <tr>
+                                <td>White Perch</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Striped Bass</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Sunfishes</td></tr>
+                            <tr>
+                                <td>Banded Sunfish</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Redbreast Sunfish</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Pumpkinseed</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Bluegill</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Smallmouth Bass</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Largemouth Bass</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Black Crappie</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Perches</td></tr>
+                            <tr>
+                                <td>Yellow Perch</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Swamp Darter</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr>
+                                <td>Tessallated Darter</td>
+                                <td>n/a</td>
+                            </tr>
+
+                            <tr><td colspan=2>Bluefishes</td></tr>
+                            <tr>
+                                <td>Bluefish</td>
+                                <td>n/a</td>
+                            </tr>
+
+                            <tr><td colspan=2>Jacks</td></tr>
+                            <tr>
+                                <td>Crevalle Jack</td>
+                                <td>n/a</td>
+                            </tr>
+                             <tr>
+                                <td>Lookdown</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Snappers</td></tr>
+                            <tr>
+                                <td>Gray Snapper</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Mojarras</td></tr>
+                            <tr>
+                                <td>Spotfin Mojarra</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Wrasses</td></tr>
+                            <tr>
+                                <td>Tautog</td>
+                                <td>n/a</td>
+                            </tr>
+                             <tr><td colspan=2>Porgies</td></tr>
+                            <tr>
+                                <td>Pinfish</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Drums</td></tr>
+                            <tr>
+                                <td>Weakfish</td>
+                                <td>n/a</td>
+                            </tr>
+
+                            <tr>
+                                <td>Northern Kingfish</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Gobies</td></tr>
+                            <tr>
+                                <td>Naked Goby</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Butterfishes</td></tr>
+                            <tr>
+                                <td>Butterfish</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>Turbots</td></tr>
+                            <tr>
+                                <td>Windowpane</td>
+                                <td>n/a</td>
+                            </tr>
+
+                            <tr><td colspan=2>Righteye Flounders</td></tr>
+                            <tr>
+                                <td>Winter flounder</td>
+                                <td>n/a</td>
+                            </tr>
+                            <tr><td colspan=2>American Soles</td></tr>
+                            <tr>
+                                <td>Hogchocker</td>
+                                <td>n/a</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    
+    </body>
+    
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-54930458-1', 'auto');
+        ga('send', 'pageview');
+
+    </script>
+    
+</html>

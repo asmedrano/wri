@@ -1,5 +1,8 @@
 wri
 ===
+Required:
+https://github.com/asmedrano/jinjastar
+
 
 TODO:
 * About Page
@@ -7,3 +10,4 @@ TODO:
 * Ads strategy 
 * enable specific cors
 * minify on deploy
+
