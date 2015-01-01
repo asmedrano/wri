@@ -4,12 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "github.com/lib/pq"
+	"github.com/asmedrano/wri/resources"
+	"github.com/asmedrano/wri/tools"
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"strings"
-	"os"
 )
 
 func main() {
@@ -27,85 +28,20 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("hi"))
 }
 
-/* Resource for the lakes table
-Fields Available are:
-    gid        | integer                     | not null default nextval('lakes_gid_seq'::regclass)
-    objectid   | numeric(10,0)               |
-    island     | character varying(1)        |
-    name       | character varying(50)       |
-    wbid       | character varying(20)       |
-    acres      | numeric                     |
-    pond       | character varying(10)       |
-    trout_stk  | character varying(4)        |
-    pubacc     | character varying(4)        |
-    boatramp   | character varying(4)        |
-    rstrctn    | character varying(25)       |
-    shoremiles | numeric                     |
-    srpw       | integer                     |
-    cold       | character varying(4)        |
-    wqs        | character varying(6)        |
-    cat        | character varying(6)        |
-    shape_area | numeric                     |
-    shape_len  | numeric                     |
-    geom       | geometry(MultiPolygon,4326) |
-
-*/
-
-type LakeResource struct {
-	Gid         int64
-	ObjectId    int64
-	Island      string
-	Name        string
-	Wbid        string
-	Acres       float64
-	Pond        string
-	TroutStk    string
-	PubAcc      string
-	BoatRamp    string
-	Restriction string
-	ShoreMiles  float64
-	SRPW        int64
-	Cold        string
-	WQS         string
-	Cat         string
-}
-
-// Returns a map string of a name and the type of query to use
-func queryType(name string, qtype string) map[string]string {
-	m := map[string]string{
-		"name":  name,
-		"qtype": qtype,
-	}
-	return m
-
-}
-func parseQueryStr(r *http.Request, qm map[string]map[string]string) map[string]string {
-	m := map[string]string{}
-
-	for k, _ := range qm {
-		v := r.FormValue(k)
-		if v != "" {
-			m[k] = v
-		}
-	}
-
-	return m
-}
-
 /* a map the specifies the type of query to perform*/
 var lakesQueryMap = map[string]map[string]string{
-	"n":  queryType("name", "ILIKE"),  //name
-	"p":  queryType("pond", "="),      // pond
-	"t":  queryType("trout_stk", "="), // trout
-	"pa": queryType("pubacc", "="),    // pubacc
-	"br": queryType("boatramp", "="),  //boatramp
-	"c":  queryType("cold", "="),      //cold
-	"i":  queryType("island", "="),
-    "cat": queryType("cat", "="), //category
+	"n":   tools.QueryType("name", "ILIKE"),  //name
+	"p":   tools.QueryType("pond", "="),      // pond
+	"t":   tools.QueryType("trout_stk", "="), // trout
+	"pa":  tools.QueryType("pubacc", "="),    // pubacc
+	"br":  tools.QueryType("boatramp", "="),  //boatramp
+	"c":   tools.QueryType("cold", "="),      //cold
+	"i":   tools.QueryType("island", "="),
+	"cat": tools.QueryType("cat", "="), //category
 }
 
 func buildLakesQuery(m map[string]string) (string, []interface{}) {
-    /*Actually builds the query we pass into SQL*/
+	/*Actually builds the query we pass into SQL*/
 	query := ""
 	vals := []interface{}{}
 	prefix := "WHERE"
@@ -126,10 +62,10 @@ func buildLakesQuery(m map[string]string) (string, []interface{}) {
 
 func LakesHandler(w http.ResponseWriter, r *http.Request) {
 
-	db := GetDB()
+	db := tools.GetDB()
 	defer db.Close()
 
-	rQ := parseQueryStr(r, lakesQueryMap)
+	rQ := tools.ParseQueryStr(r, lakesQueryMap)
 	qs, qv := buildLakesQuery(rQ)
 	var rows *sql.Rows
 	var err error
@@ -150,13 +86,13 @@ func LakesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	results := map[string]LakeResource{}
+	results := map[string]resources.LakeResource{}
 
 	if err != nil {
 		log.Print(err)
 	}
 	for rows.Next() {
-		r := LakeResource{}
+		r := resources.LakeResource{}
 		if err := rows.Scan(&r.Gid, &r.ObjectId, &r.Island, &r.Name, &r.Wbid, &r.Acres, &r.Pond, &r.TroutStk, &r.PubAcc, &r.BoatRamp, &r.Restriction, &r.SRPW, &r.Cold, &r.WQS, &r.Cat); err != nil {
 			log.Print(err)
 		}
@@ -173,20 +109,12 @@ func LakesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	w.Write(js)
 
 }
 
-type GeomResource struct {
-	Gid  int64
-	Name string
-	Geom string
-	Centroid string
-}
-
 func LakesGeomHandler(w http.ResponseWriter, r *http.Request) {
-	db := GetDB()
+	db := tools.GetDB()
 	defer db.Close()
 	var rows *sql.Rows
 	var err error
@@ -196,12 +124,12 @@ func LakesGeomHandler(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	geoms := r.Form["g"]
-	results := []GeomResource{}
+	results := []resources.GeomResource{}
 	query := fmt.Sprintf("SELECT gid, name, ST_AsGeoJSON(geom), ST_AsGeoJSON(ST_Centroid(geom)) as centroid FROM lakes WHERE gid IN (%s)", strings.Join(geoms, ","))
 	rows, err = db.Query(query)
 	defer rows.Close()
 	for rows.Next() {
-		g := GeomResource{}
+		g := resources.GeomResource{}
 		if err := rows.Scan(&g.Gid, &g.Name, &g.Geom, &g.Centroid); err != nil {
 			log.Print(err)
 		}
@@ -220,51 +148,32 @@ func LakesGeomHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
-/*
- Access Data looks like:
-
- gid       | integer                | not null default nextval('fish_access_gid_seq'::regclass)
- id        | numeric                |
- name      | character varying(50)  |
- rmp_cns   | character varying(254) |
- rmp_cnd   | character varying(254) |
- park      | character varying(50)  |
- rstrctn   | character varying(254) |
- uni       | character varying(1)   |
- type      | character varying(20)  |
- wat_ttp   | character varying(8)   |
- lat       | double precision       |
- lon       | double precision       |
- ownership | character varying(20)  |
- geom      | geometry(Point)        |
-
-*/
+// This is map of what GET params passed to the view represent
 var accessQueryMap = map[string]map[string]string{
-	"n":  queryType("name", "ILIKE"), //name
-	"wt": queryType("wat_ttp", "="),  // water type
-	"t":  queryType("rstrctn", "ILIKE"), //we can infer trout stk from here
-	"br":  queryType("type", "ILIKE"), //we can infer boat ramp from here by sear
+	"n":  tools.QueryType("name", "ILIKE"),    //name
+	"wt": tools.QueryType("wat_ttp", "="),     // water type
+	"t":  tools.QueryType("rstrctn", "ILIKE"), //we can infer trout stk from here
+	"br": tools.QueryType("type", "ILIKE"),    //we can infer boat ramp from here by sear
 }
 
-// TODO:Dry this up
 func buildAccessQuery(m map[string]string) (string, []interface{}) {
 	query := ""
 	vals := []interface{}{}
 	prefix := "WHERE"
-	for k, v := range m { // again v is the value coming from the 
-        // Some special value modifiers
-        if k == "t" {
-            // To find trout stock we have to actually search for "stocked with trout"
-            if v == "Y" {
-                v = "stocked with trout"
-            }
-        }
-        if k == "br" {
-            // To find boat ramps  we have to search for "Boat"
-            if v == "Y" {
-                v = "Boat"
-            }
-        }
+	for k, v := range m { // again v is the value coming from the
+		// Some special value modifiers
+		if k == "t" {
+			// To find trout stock we have to actually search for "stocked with trout"
+			if v == "Y" {
+				v = "stocked with trout"
+			}
+		}
+		if k == "br" {
+			// To find boat ramps  we have to search for "Boat"
+			if v == "Y" {
+				v = "Boat"
+			}
+		}
 
 		qm := accessQueryMap[k]
 		if qm["qtype"] == "ILIKE" {
@@ -280,65 +189,11 @@ func buildAccessQuery(m map[string]string) (string, []interface{}) {
 	return query, vals
 }
 
-type AccessResource struct {
-	Gid         int64 
-	Id          string
-	Name        string
-	Rmp_Cns     sql.NullString
-	Rmp_Cnd     sql.NullString
-	Park        sql.NullString
-	Restriction sql.NullString
-	Uni         sql.NullString
-	Type        sql.NullString
-	Wat_ttp     sql.NullString
-	Lat         float32
-	Lon         float32
-	Ownership   string
-	Geom        string
-}
-
-func (a *AccessResource) MarshalJSON() ([]byte, error){
-    m := struct {
-        Gid         int64
-        Id          string
-        Name        string
-        Rmp_Cns     string
-        Rmp_Cnd     string
-        Park        string
-        Restriction string
-        Uni         string
-        Type        string
-        Wat_ttp     string
-        Lat         float32
-        Lon         float32
-        Ownership   string
-        Geom        string
-    }{
-        a.Gid, 
-        a.Id,
-        a.Name, 
-        a.Rmp_Cns.String,
-        a.Rmp_Cnd.String,
-        a.Park.String,
-        a.Restriction.String,
-        a.Uni.String,
-        a.Type.String,
-        a.Wat_ttp.String,
-        a.Lat,
-        a.Lon,
-        a.Ownership, 
-        a.Geom,
-    }
-
-    return json.Marshal(m)
-}
-
-
 func AccessHandler(w http.ResponseWriter, r *http.Request) {
-	db := GetDB()
+	db := tools.GetDB()
 	defer db.Close()
 
-	rQ := parseQueryStr(r, accessQueryMap)
+	rQ := tools.ParseQueryStr(r, accessQueryMap)
 	qs, qv := buildAccessQuery(rQ)
 	var rows *sql.Rows
 	var err error
@@ -359,16 +214,16 @@ func AccessHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	results := []AccessResource{}
+	results := []resources.AccessResource{}
 
 	if err != nil {
 		log.Print(err)
 	}
 
 	for rows.Next() {
-		r := AccessResource{}
+		r := resources.AccessResource{}
 		if err := rows.Scan(&r.Gid, &r.Id, &r.Name, &r.Rmp_Cns, &r.Rmp_Cnd, &r.Park, &r.Restriction, &r.Uni, &r.Type, &r.Wat_ttp, &r.Lat, &r.Lon, &r.Ownership, &r.Geom); err != nil {
-		    log.Print(err)
+			log.Print(err)
 		}
 		results = append(results, r)
 	}
@@ -384,19 +239,4 @@ func AccessHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(js)
-}
-
-// A little stub to connect to our database
-func GetDB() *sql.DB {
-    dbUser := os.Getenv("WRI_DB_USER")
-    dbPass := os.Getenv("WRI_DB_PASS")
-    dbName := os.Getenv("WRI_DB_NAME")
-    dbHost := os.Getenv("WRI_DB_HOST")
-
-	connStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable", dbUser, dbPass, dbName, dbHost, "5432") // i think 5432 is safe to assume
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		log.Print(err)
-	}
-	return db
 }
