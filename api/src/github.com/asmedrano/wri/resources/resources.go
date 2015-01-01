@@ -38,7 +38,7 @@ type RiverResource struct {
 	RivMiles  float64
 	Label     string
 	WQS       string
-	Cat       float64
+	Cat       string
 }
 
 /* Resource for the lakes table

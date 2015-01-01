@@ -15,17 +15,92 @@ import (
 
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/", HomeHandler)
 	r.HandleFunc("/lakes", LakesHandler)
 	r.HandleFunc("/lakes/geom", LakesGeomHandler)
 	r.HandleFunc("/access", AccessHandler)
+	r.HandleFunc("/rivers", RiversHandler)
 	http.Handle("/", r)
 	fmt.Print("Starting Server...\n")
 	http.ListenAndServe(":8000", nil)
 }
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hi"))
+var riversQueryMap = map[string]map[string]string{
+	"n":   tools.QueryType("name", "ILIKE"), //name
+	"cat": tools.QueryType("cat", "="),      //category
+	"c":   tools.QueryType("cold", "="),     //cold
+}
+
+func buildRiversQuery(m map[string]string) (string, []interface{}) {
+	/*Actually builds the query we pass into SQL*/
+	query := ""
+	vals := []interface{}{}
+	prefix := "WHERE"
+	for k, v := range m { // v is the value coming from the GET params
+		qm := lakesQueryMap[k]
+		if qm["qtype"] == "ILIKE" {
+			v = "%" + v + "%"
+		}
+		vals = append(vals, v)
+		if len(vals)-1 > 0 {
+			prefix = "AND"
+		}
+		query += fmt.Sprintf(" %s %s %s $%d", prefix, qm["name"], qm["qtype"], len(vals))
+
+	}
+	return query, vals
+}
+
+func RiversHandler(w http.ResponseWriter, r *http.Request) {
+
+	db := tools.GetDB()
+	defer db.Close()
+
+	rQ := tools.ParseQueryStr(r, riversQueryMap)
+	qs, qv := buildRiversQuery(rQ)
+	var rows *sql.Rows
+	var err error
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+
+	query := "SELECT gid, objectid, name, wbid, cold, rivmiles, label, wqs, cat FROM rivers_streams"
+	if qs != "" {
+		query += qs
+	}
+	query += " ORDER BY name"
+
+	if qs == "" {
+		rows, err = db.Query(query)
+	} else {
+		rows, err = db.Query(query, qv...)
+	}
+	defer rows.Close()
+
+	results := map[string]resources.RiverResource{}
+
+	if err != nil {
+		log.Print(err)
+	}
+	for rows.Next() {
+		r := resources.RiverResource{}
+		if err := rows.Scan(&r.Gid, &r.ObjectId, &r.Name, &r.Wbid, &r.Cold, &r.RivMiles, &r.Label, &r.WQS, &r.Cat); err != nil {
+			log.Print(err)
+		}
+		results[fmt.Sprintf("%d", r.Gid)] = r
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Print(err)
+	}
+
+	js, err := json.Marshal(results)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(js)
+
 }
 
 /* a map the specifies the type of query to perform*/
@@ -113,6 +188,7 @@ func LakesHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// TODO: Since we are adding 2 more Geom Resources, we need to make this a little more generic
 func LakesGeomHandler(w http.ResponseWriter, r *http.Request) {
 	db := tools.GetDB()
 	defer db.Close()
