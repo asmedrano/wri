@@ -163,3 +163,40 @@ func (a *AccessResource) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(m)
 }
+
+/*
+Fields for water sheds
+   Table "public.water_sheds"
+   Column   |          Type          |                         Modifiers
+------------+------------------------+-----------------------------------------------------------
+ gid        | integer                | not null default nextval('water_sheds_gid_seq'::regclass)
+ huc_8      | character varying(8)   |
+ huc_10     | character varying(10)  |
+ huc_12     | character varying(12)  |
+ acres      | numeric                |
+ ncontrb_a  | numeric                |
+ hu_10_gnis | character varying(23)  |
+ hu_12_gnis | character varying(23)  |
+ hu_10_ds   | character varying(10)  |
+ hu_10_name | character varying(80)  |
+ hu_10_mod  | character varying(20)  |
+ hu_10_type | character varying(1)   |
+ hu_12_ds   | character varying(12)  |
+ hu_12_name | character varying(80)  |
+ hu_12_mod  | character varying(20)  |
+ hu_12_type | character varying(1)   |
+ meta_id    | character varying(4)   |
+ states     | character varying(20)  |
+ local_name | character varying(85)  |
+ geom       | geometry(MultiPolygon) |
+Indexes:
+    "water_sheds_pkey" PRIMARY KEY, btree (gid)
+    "water_sheds_geom_gist" gist (geom)
+*/
+
+// Water Sheds are not queryable. They just aways appear on the map.
+
+type WaterShedResource struct {
+	Gid int64
+	Name string // really this is local_name
+}

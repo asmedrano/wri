@@ -16,7 +16,7 @@ import (
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/lakes", LakesHandler)
-	r.HandleFunc("/lakes/geom", LakesGeomHandler)
+	r.HandleFunc("/geom", GeomHandler)
 	r.HandleFunc("/access", AccessHandler)
 	r.HandleFunc("/rivers", RiversHandler)
 	http.Handle("/", r)
@@ -189,19 +189,53 @@ func LakesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // TODO: Since we are adding 2 more Geom Resources, we need to make this a little more generic
-func LakesGeomHandler(w http.ResponseWriter, r *http.Request) {
+func GeomHandler(w http.ResponseWriter, r *http.Request) {
 	db := tools.GetDB()
 	defer db.Close()
 	var rows *sql.Rows
 	var err error
+	var geomNameCol string = ""
+	var geomTbl string = ""
+    var gType string = ""
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 
 	r.ParseForm()
-	geoms := r.Form["g"]
+
+	geoms := r.Form["g"] // a comma delimited list of geom ids
+
+	if len(r.Form["t"]) != 0 {
+	    gType = r.Form["t"][0]// the type of geom l, r or ws ( lake, river, water shed )
+    }else{
+        gType = "l" //default to lakes
+    }
+
+	// get correct type from table
+	switch gType {
+	case "l":
+		geomTbl = "lakes"
+		geomNameCol = "name"
+	case "r":
+		geomTbl = "rivers_streams"
+		geomNameCol = "name"
+	case "ws":
+
+		geomTbl = "water_sheds"
+		geomNameCol = "local_name"
+	default:
+		geomTbl = "lakes"
+		geomNameCol = "name"
+
+	}
+
 	results := []resources.GeomResource{}
-	query := fmt.Sprintf("SELECT gid, name, ST_AsGeoJSON(geom), ST_AsGeoJSON(ST_Centroid(geom)) as centroid FROM lakes WHERE gid IN (%s)", strings.Join(geoms, ","))
+	query := fmt.Sprintf("SELECT gid, COALESCE(%s,'No Name'), ST_AsGeoJSON(geom), ST_AsGeoJSON(ST_Centroid(geom)) as centroid FROM %s", geomNameCol, geomTbl)
+    // default to showing all geoms in the collection
+	if len(geoms) > 0 {
+        query += fmt.Sprintf(" WHERE gid IN (%s)", strings.Join(geoms, ","))
+    }
+
 	rows, err = db.Query(query)
 	defer rows.Close()
 	for rows.Next() {
