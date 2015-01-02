@@ -3,6 +3,7 @@
         <div class="container-fluid">
             <div class="row" ng-controller="MapCtrl">
                 <div class="col-md-12" id="map"></div>
+                {#
                 <div class="controls-box" ng-show="pub_fish_acc_available || lakes_ponds_available" ng-class="{double:pub_fish_acc_available && lakes_ponds_available}"> 
                     <form role="form" id="lake-pond" ng-show="lakes_ponds_available">
                         <h4> Lakes and Ponds ({[lakes_count]})</h4>
@@ -46,13 +47,15 @@
                     </form>
 
                 </div>
+                #}
 
             </div>
         </div>
     {% endblock %}
     {%block scriptfoot %}
     <script>
-        var API_URL = "http://api.rifisheries.com";
+        //var API_URL = "http://api.rifisheries.com";
+        var API_URL = "http://localhost:8000";
     </script>
     <script src="static/vendor/jquery/dist/jquery.min.js"></script>
     <script src="static/vendor/angular/angular.min.js"></script>

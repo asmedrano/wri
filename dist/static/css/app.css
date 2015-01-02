@@ -107,9 +107,14 @@ form#lake-pond{
     font-family: 'Source Sans Pro', sans-serif;
 
 }
-.navbar-right.navbar-nav>li>a {
+.navbar-right.navbar-nav>li>a:link,
+.navbar-right.navbar-nav>li>a:visited
+{
     color:#fff;
 
+}
+.navbar-right.navbar-nav>li>a:hover {
+    text-decoration:underline;
 }
 
 table td[colspan]{

@@ -230,7 +230,7 @@ func GeomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	results := []resources.GeomResource{}
-	query := fmt.Sprintf("SELECT gid, COALESCE(%s,'No Name'), ST_AsGeoJSON(geom), ST_AsGeoJSON(ST_Centroid(geom)) as centroid FROM %s", geomNameCol, geomTbl)
+	query := fmt.Sprintf("SELECT gid, COALESCE(%s,'No Name'), ST_AsGeoJSON(ST_Simplify(geom, 0.0002)), ST_AsGeoJSON(ST_Centroid(geom)) as centroid FROM %s", geomNameCol, geomTbl)
     // default to showing all geoms in the collection
 	if len(geoms) > 0 {
         query += fmt.Sprintf(" WHERE gid IN (%s)", strings.Join(geoms, ","))

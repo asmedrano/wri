@@ -45,7 +45,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
     $scope.control.addTo($scope.map);
 
-
+    
     // add events for the overlays
     $scope.map.on('overlayadd', function(layer) {
         if(layer.name == "Public Fishing Access") {
@@ -75,11 +75,11 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     L.control.scale({
         position: "bottomright"
     }).addTo($scope.map);
-
-    $scope.updateGeoms = function() {
-        $scope.gids = [];
+    
+    $scope.updateLakeGeoms = function() {
+        $scope.gids = []; // we use this too create chunks
         $scope.loadedGeoms = 0;
-        var chunkSize = 100;
+        var chunkSize = 1000;
         var chunks = [];
         var chunk;
 
@@ -103,10 +103,10 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
         }
         
         for(var i in chunks) {
-            var gidsStr = "?g=";
+            var gidsStr = "&g=";
             gidsStr += chunks[i].join("&g=");
             
-            $http({method: 'GET', url: $scope.apiURL + "/lakes/geom" + gidsStr}).
+            $http({method: 'GET', url: $scope.apiURL + "/geom?t=l" + gidsStr}).
             success(function(data, status, headers, config) {
                 var feature = null;
                 $scope.loadedGeoms += data.length;
@@ -126,17 +126,79 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                     }));
                 }
 
-                if($scope.loadedGeoms == $scope.gidsLen) {
-                    $scope.control.addOverlay($scope.mapLayers['lp'], "Lakes and Ponds");
-                    $scope.lakes_ponds_available = true;
-
-                }
+                $scope.control.addOverlay($scope.mapLayers['lp'], "Lakes and Ponds");
+                $scope.lakes_ponds_available = true;
 
             }).
             error(function(data, status, headers, config) {
             });
         }
     }
+    $scope.updateRiversGeoms = function() {
+        $scope.gids = []; // we use this too create chunks
+        $scope.loadedGeoms = 0;
+        var chunkSize = 1000;
+        var chunks = [];
+        var chunk;
+
+        var lp = $scope.getOverlayLayer($scope.control,"Rivers and Streams");
+        if(lp != null){
+            $scope.control.removeLayer(lp.layer);
+            $scope.map.removeLayer($scope.mapLayers["rs"]);
+        }
+        var f = L.featureGroup([]);
+        $scope.map.addLayer(f);
+        $scope.mapLayers["rs"] = f;
+
+        for(var l in $scope.rivers) {
+            $scope.gids.push($scope.rivers[l].Gid);
+        }
+        $scope.gidsLen = $scope.gids.length;
+        // make chunks for geoms request
+        for(var i=0; i<$scope.gids.length; i += chunkSize){
+            chunk = $scope.gids.slice(i, i+chunkSize);
+            chunks.push(chunk);
+        }
+        
+        for(var i in chunks) {
+            var gidsStr = "&g=";
+            gidsStr += chunks[i].join("&g=");
+            
+            $http({method: 'GET', url: $scope.apiURL + "/geom?t=r" + gidsStr}).
+            success(function(data, status, headers, config) {
+                var feature = null;
+                $scope.loadedGeoms += data.length;
+                for(var i in data) {
+                    feature = JSON.parse(data[i].Geom);
+                    feature.properties = {
+                        name: data[i].Name,
+                        gid: data[i].Gid
+                    }
+                    $scope.mapLayers['rs'].addLayer(L.geoJson(feature,{
+                        style: {
+                            "color": "#1E74FF",
+                            "weight": 2,
+                            "opacity": .5,
+                        },
+                        onEachFeature: function(feature, layer) {
+                            var popUpStr = "";
+                            popUpStr += "<h3>" + feature.properties.name + "</h3>";
+                            layer.bindPopup(popUpStr);
+
+                        }
+                    }));
+                }
+
+                $scope.control.addOverlay($scope.mapLayers['rs'], "Rivers and Streams");
+                $scope.rivers_streams_available = true;
+
+
+            }).
+            error(function(data, status, headers, config) {
+            });
+        }
+    }
+
     
     $scope.featureClkHandler = function(feature, layer) {
         var props = $scope.lakes[feature.properties.gid.toString()];
@@ -184,7 +246,26 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
             $scope.lakes_count = Object.keys($scope.lakes).length
             // always fetch geoms when lakes are updated;
             if($scope.lakes_count > 0){
-                $scope.updateGeoms();
+                $scope.updateLakeGeoms();
+            }
+        }).
+        error(function(data, status, headers, config) {
+            console.log(data, status);
+        });
+    }
+
+    $scope.getRiversStreams = function() {
+        $http({
+            method: 'GET', 
+            url: $scope.apiURL + "/rivers",
+            params: $scope.rs_search_params
+        }).
+        success(function(data, status, headers, config) {
+            $scope.rivers = data;
+            $scope.rivers_count = Object.keys($scope.rivers).length
+            // always fetch geoms when lakes are updated;
+            if($scope.rivers_count > 0){
+                $scope.updateRiversGeoms();
             }
         }).
         error(function(data, status, headers, config) {
@@ -363,7 +444,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
         $scope.getAccessPoints();
     }
-
+    
 
     $scope.toTitleCase = function(str){
         return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
@@ -401,6 +482,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     }
     $scope.resizeMap();
     $scope.getLakes();
+    $scope.getRiversStreams();
     $scope.getAccessPoints();
     
     angular.element(document).ready(function(){
