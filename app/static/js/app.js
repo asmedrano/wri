@@ -61,7 +61,6 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
         $scope.mapBounds = $scope.map.getBounds();
         $scope.getLakes();
         $scope.getRiversStreams();
-        $scope.getAccessPoints();
     }
     
     $scope.getLakes = function() {
@@ -484,6 +483,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     }
     $scope.resizeMap();
     $scope.getMapItems();
+    $scope.getAccessPoints();
     
     angular.element(document).ready(function(){
         angular.element( window ).resize(function() {
