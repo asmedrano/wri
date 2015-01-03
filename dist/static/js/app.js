@@ -16,11 +16,11 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.lp_search_params = {};
     $scope.rs_search_params = {};
     $scope.access_search_params = {};
-    $scope.loadedGeoms = 0;
     $scope.gids = {
         lakes:{},
         rivers:{}
     };
+    $scope.fGroups = {};
     /*intialize map*/
     $scope.map = L.map('map',{zoomControl: false }).setView([41.83, -71.41], 13);
     new L.Control.Zoom({ position: 'topright' }).addTo($scope.map);
@@ -60,8 +60,8 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.getMapItems = function() {
         $scope.mapBounds = $scope.map.getBounds();
         $scope.getLakes();
-        //$scope.getRiversStreams();
-        //$scope.getAccessPoints();
+        $scope.getRiversStreams();
+        $scope.getAccessPoints();
     }
     
     $scope.getLakes = function() {
@@ -90,14 +90,12 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.updateLakeGeoms = function() {
         var newGids = [];
         var lp = $scope.getOverlayLayer($scope.control,"Lakes and Ponds");
-        /*
-        if(lp != null){
-            //$scope.control.removeLayer(lp.layer);
-            //$scope.map.removeLayer($scope.mapLayers["lp"]);
-        }*/
-        var f = L.featureGroup([]);
-        $scope.map.addLayer(f);
-        $scope.mapLayers["lp"] = f;
+        if (!$scope.fGroups.hasOwnProperty('lakes')) {
+            $scope.fGroups.lakes = L.featureGroup([]);
+            $scope.map.addLayer($scope.fGroups.lakes);
+            $scope.mapLayers["lp"] = $scope.fGroups.lakes;
+            $scope.control.addOverlay($scope.mapLayers['lp'], "Lakes and Ponds");
+        }
 
         for(var l in $scope.lakes) {
             if(!$scope.gids.lakes.hasOwnProperty($scope.lakes[l].Gid)) {
@@ -105,36 +103,31 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                 $scope.gids.lakes[$scope.lakes[l].Gid] = 0;
             }
         }
-
-        var gidsStr = "&g=";
-        gidsStr += newGids.join("&g=");
-        
-        $http({method: 'GET', url: $scope.apiURL + "/geom?t=l" + gidsStr}).
-        success(function(data, status, headers, config) {
-            var feature = null;
-            $scope.loadedGeoms += data.length;
-            for(var i in data) {
-                feature = JSON.parse(data[i].Geom);
-                feature.properties = {
-                    name: data[i].Name,
-                    gid: data[i].Gid
+        if( newGids.length >1 ) {
+            var gidsStr = "&g=";
+            gidsStr += newGids.join("&g=");
+            $http({method: 'GET', url: $scope.apiURL + "/geom?t=l" + gidsStr}).
+            success(function(data, status, headers, config) {
+                var feature = null;
+                for(var i in data) {
+                    feature = JSON.parse(data[i].Geom);
+                    feature.properties = {
+                        name: data[i].Name,
+                        gid: data[i].Gid
+                    }
+                    $scope.mapLayers['lp'].addLayer(L.geoJson(feature,{
+                        style: {
+                            "color": "#1E74FF",
+                            "weight": 1,
+                            "opacity": .8
+                        },
+                        onEachFeature:$scope.featureClkHandler
+                    }));
                 }
-                $scope.mapLayers['lp'].addLayer(L.geoJson(feature,{
-                    style: {
-                        "color": "#1E74FF",
-                        "weight": 1,
-                        "opacity": .8
-                    },
-                    //onEachFeature:$scope.featureClkHandler
-                }));
-            }
-            if(lp == null){
-                $scope.control.addOverlay($scope.mapLayers['lp'], "Lakes and Ponds");
-            }
-
-        }).
-        error(function(data, status, headers, config) {
+            }).
+            error(function(data, status, headers, config) {
         });
+        }
     }
 
     /*
@@ -194,39 +187,30 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     }
 
     $scope.updateRiversGeoms = function() {
-        $scope.gids = []; // we use this too create chunks
-        $scope.loadedGeoms = 0;
-        var chunkSize = 1000;
-        var chunks = [];
-        var chunk;
-
+        var newGids = [];
         var lp = $scope.getOverlayLayer($scope.control,"Rivers and Streams");
-        if(lp != null){
-            $scope.control.removeLayer(lp.layer);
-            $scope.map.removeLayer($scope.mapLayers["rs"]);
+       
+        if (!$scope.fGroups.hasOwnProperty('rivers')) {
+            $scope.fGroups.rivers = L.featureGroup([]);
+            $scope.map.addLayer($scope.fGroups.rivers);
+            $scope.mapLayers["rs"] = $scope.fGroups.rivers;
+            $scope.control.addOverlay($scope.mapLayers['rs'], "Rivers and Streams");
         }
-        var f = L.featureGroup([]);
-        $scope.map.addLayer(f);
-        $scope.mapLayers["rs"] = f;
+
 
         for(var l in $scope.rivers) {
-            $scope.gids.push($scope.rivers[l].Gid);
+            if(!$scope.gids.rivers.hasOwnProperty($scope.rivers[l].Gid)) {
+                newGids.push($scope.rivers[l].Gid);
+                $scope.gids.rivers[$scope.rivers[l].Gid] = 0;
+            }
         }
-        $scope.gidsLen = $scope.gids.length;
-        // make chunks for geoms request
-        for(var i=0; i<$scope.gids.length; i += chunkSize){
-            chunk = $scope.gids.slice(i, i+chunkSize);
-            chunks.push(chunk);
-        }
-        
-        for(var i in chunks) {
+        if( newGids.length >1 ) {
             var gidsStr = "&g=";
-            gidsStr += chunks[i].join("&g=");
+            gidsStr += newGids.join("&g=");
             
             $http({method: 'GET', url: $scope.apiURL + "/geom?t=r" + gidsStr}).
             success(function(data, status, headers, config) {
                 var feature = null;
-                $scope.loadedGeoms += data.length;
                 for(var i in data) {
                     feature = JSON.parse(data[i].Geom);
                     feature.properties = {
@@ -236,22 +220,16 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                     $scope.mapLayers['rs'].addLayer(L.geoJson(feature,{
                         style: {
                             "color": "#1E74FF",
-                            "weight": 2,
+                            "weight": 3,
                             "opacity": .5,
                         },
                         onEachFeature: function(feature, layer) {
                             var popUpStr = "";
                             popUpStr += "<h3>" + feature.properties.name + "</h3>";
                             layer.bindPopup(popUpStr);
-
                         }
                     }));
                 }
-
-                $scope.control.addOverlay($scope.mapLayers['rs'], "Rivers and Streams");
-                $scope.rivers_streams_available = true;
-
-
             }).
             error(function(data, status, headers, config) {
             });

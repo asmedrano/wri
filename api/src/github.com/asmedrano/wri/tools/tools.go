@@ -2,10 +2,11 @@ package tools
 
 import (
 	"database/sql"
-	"net/http"
-	"os"
 	"fmt"
 	"log"
+	"net/http"
+	"os"
+	"encoding/json"
 )
 
 // Returns a map string of a name and the type of query to use
@@ -17,9 +18,10 @@ func QueryType(name string, qtype string) map[string]string {
 	return m
 
 }
+
+// Parse http.Request and pull out GET params from query map. GET params with no value are ignored
 func ParseQueryStr(r *http.Request, qm map[string]map[string]string) map[string]string {
 	m := map[string]string{}
-
 	for k, _ := range qm {
 		v := r.FormValue(k)
 		if v != "" {
@@ -29,6 +31,22 @@ func ParseQueryStr(r *http.Request, qm map[string]map[string]string) map[string]
 
 	return m
 }
+
+
+type MapBounds struct {
+	Southwest map[string]float64 `json:"_southWest"`
+	Northeast map[string]float64 `json:"_northEast"`
+}
+
+func UnmarshalMapBounds(s string) MapBounds {
+	i := MapBounds{}
+	b := []byte(s)
+
+	// Decode bytes b into interface i
+	json.Unmarshal(b, &i)
+	return i
+}
+
 
 // A little stub to connect to our database
 func GetDB() *sql.DB {

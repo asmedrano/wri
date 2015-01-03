@@ -28,25 +28,42 @@ var riversQueryMap = map[string]map[string]string{
 	"n":   tools.QueryType("name", "ILIKE"), //name
 	"cat": tools.QueryType("cat", "="),      //category
 	"c":   tools.QueryType("cold", "="),     //cold
+	"gq":  tools.QueryType("geom", "GEO"),   // THIS doesnt anything just cause ParseQuery to capture the value
+
 }
 
 func buildRiversQuery(m map[string]string) (string, []interface{}) {
 	/*Actually builds the query we pass into SQL*/
 	query := ""
 	vals := []interface{}{}
-	prefix := "WHERE"
+	prefix := " WHERE"
 	for k, v := range m { // v is the value coming from the GET params
-		qm := lakesQueryMap[k]
-		if qm["qtype"] == "ILIKE" {
-			v = "%" + v + "%"
+		qm := riversQueryMap[k]
+		if qm["qtype"] != "GEO" {
+			if qm["qtype"] == "ILIKE" {
+				v = "%" + v + "%"
+			}
+			vals = append(vals, v)
+			if len(vals)-1 > 0 {
+				prefix = "AND"
+			}
+			query += fmt.Sprintf(" %s %s %s $%d", prefix, qm["name"], qm["qtype"], len(vals))
 		}
-		vals = append(vals, v)
-		if len(vals)-1 > 0 {
-			prefix = "AND"
-		}
-		query += fmt.Sprintf(" %s %s %s $%d", prefix, qm["name"], qm["qtype"], len(vals))
-
 	}
+
+	// Finally do something with the geoQuery if its there
+	if val, ok := m["gq"]; ok {
+		//if there is a geo component, add it to the query
+		vl := len(vals)
+		bounds := tools.UnmarshalMapBounds(val)
+		query += fmt.Sprintf("%s ST_Contains(ST_MakeEnvelope($%d, $%d, $%d, $%d), ST_Centroid(geom)) ",
+			prefix, vl+1, vl+2, vl+3, vl+4)
+		vals = append(vals, bounds.Southwest["lng"])
+		vals = append(vals, bounds.Southwest["lat"])
+		vals = append(vals, bounds.Northeast["lng"])
+		vals = append(vals, bounds.Northeast["lat"])
+	}
+
 	return query, vals
 }
 
@@ -103,7 +120,9 @@ func RiversHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-/* a map the specifies the type of query to perform*/
+/* a map the specifies the type of query to perform
+   the key is the GET param
+*/
 var lakesQueryMap = map[string]map[string]string{
 	"n":   tools.QueryType("name", "ILIKE"),  //name
 	"p":   tools.QueryType("pond", "="),      // pond
@@ -112,25 +131,43 @@ var lakesQueryMap = map[string]map[string]string{
 	"br":  tools.QueryType("boatramp", "="),  //boatramp
 	"c":   tools.QueryType("cold", "="),      //cold
 	"i":   tools.QueryType("island", "="),
-	"cat": tools.QueryType("cat", "="), //category
+	"cat": tools.QueryType("cat", "="),    //category
+	"gq":  tools.QueryType("geom", "GEO"), // THIS doesnt anything just cause ParseQuery to capture the value
 }
 
+// Where `m` is a map returned from ParseQuery
 func buildLakesQuery(m map[string]string) (string, []interface{}) {
 	/*Actually builds the query we pass into SQL*/
 	query := ""
 	vals := []interface{}{}
-	prefix := "WHERE"
+	prefix := " WHERE"
+
 	for k, v := range m { // v is the value coming from the GET params
 		qm := lakesQueryMap[k]
-		if qm["qtype"] == "ILIKE" {
-			v = "%" + v + "%"
+		if qm["qtype"] != "GEO" {
+			switch qm["qtype"] {
+			case "ILIKE":
+				v = "%" + v + "%"
+			}
+			vals = append(vals, v)
+			if len(vals)-1 > 0 {
+				prefix = "AND"
+			}
+			query += fmt.Sprintf(" %s %s %s $%d", prefix, qm["name"], qm["qtype"], len(vals))
 		}
-		vals = append(vals, v)
-		if len(vals)-1 > 0 {
-			prefix = "AND"
-		}
-		query += fmt.Sprintf(" %s %s %s $%d", prefix, qm["name"], qm["qtype"], len(vals))
+	}
 
+	// Finally do something with the geoQuery if its there
+	if val, ok := m["gq"]; ok {
+		//if there is a geo component, add it to the query
+		vl := len(vals)
+		bounds := tools.UnmarshalMapBounds(val)
+		query += fmt.Sprintf("%s ST_Contains(ST_MakeEnvelope($%d, $%d, $%d, $%d, 4326), geom) ",
+			prefix, vl+1, vl+2, vl+3, vl+4)
+		vals = append(vals, bounds.Southwest["lng"])
+		vals = append(vals, bounds.Southwest["lat"])
+		vals = append(vals, bounds.Northeast["lng"])
+		vals = append(vals, bounds.Northeast["lat"])
 	}
 	return query, vals
 }
@@ -152,6 +189,7 @@ func LakesHandler(w http.ResponseWriter, r *http.Request) {
 	if qs != "" {
 		query += qs
 	}
+
 	query += " ORDER BY name"
 
 	if qs == "" {
@@ -196,7 +234,7 @@ func GeomHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var geomNameCol string = ""
 	var geomTbl string = ""
-    var gType string = ""
+	var gType string = ""
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
@@ -206,10 +244,10 @@ func GeomHandler(w http.ResponseWriter, r *http.Request) {
 	geoms := r.Form["g"] // a comma delimited list of geom ids
 
 	if len(r.Form["t"]) != 0 {
-	    gType = r.Form["t"][0]// the type of geom l, r or ws ( lake, river, water shed )
-    }else{
-        gType = "l" //default to lakes
-    }
+		gType = r.Form["t"][0] // the type of geom l, r or ws ( lake, river, water shed )
+	} else {
+		gType = "l" //default to lakes
+	}
 
 	// get correct type from table
 	switch gType {
@@ -230,11 +268,11 @@ func GeomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	results := []resources.GeomResource{}
-	query := fmt.Sprintf("SELECT gid, COALESCE(%s,'No Name'), ST_AsGeoJSON(ST_Simplify(geom, 0.0002)), ST_AsGeoJSON(ST_Centroid(geom)) as centroid FROM %s", geomNameCol, geomTbl)
-    // default to showing all geoms in the collection
+	query := fmt.Sprintf("SELECT gid, COALESCE(%s,'No Name'), ST_AsGeoJSON(geom), ST_AsGeoJSON(ST_Centroid(geom)) as centroid FROM %s", geomNameCol, geomTbl)
+	// default to showing all geoms in the collection
 	if len(geoms) > 0 {
-        query += fmt.Sprintf(" WHERE gid IN (%s)", strings.Join(geoms, ","))
-    }
+		query += fmt.Sprintf(" WHERE gid IN (%s)", strings.Join(geoms, ","))
+	}
 
 	rows, err = db.Query(query)
 	defer rows.Close()
