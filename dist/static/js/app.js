@@ -14,6 +14,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.mdiv.style.height = window.innerHeight + "px";
     $scope.mdiv.style.width = window.innerWidth + "px";
     $scope.lp_search_params = {};
+    $scope.rs_search_params = {};
     $scope.access_search_params = {};
     $scope.loadedGeoms = 0;
     $scope.gids = [];
@@ -45,37 +46,44 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
     $scope.control.addTo($scope.map);
 
-    
-    // add events for the overlays
-    $scope.map.on('overlayadd', function(layer) {
-        if(layer.name == "Public Fishing Access") {
-            $scope.pub_fish_acc_available = true;
-        }
-        if(layer.name == "Lakes and Ponds") {
-            $scope.lakes_ponds_available = true;
-        }
-        $timeout(function(){
-            $scope.$apply();
-        }, 100);
-
+    $scope.map.on('zoomend', function() {
+        $scope.getMapItems();
     });
 
-    $scope.map.on('overlayremove', function(layer) {
-        if(layer.name == "Public Fishing Access") {
-            $scope.pub_fish_acc_available = false;
-        }
-        if(layer.name == "Lakes and Ponds") {
-            $scope.lakes_ponds_available = false;
-        }
-        $timeout(function(){
-            $scope.$apply();
-        }, 100);
+    $scope.map.on('dragend', function() {
+        $scope.getMapItems();
     });
 
-    L.control.scale({
-        position: "bottomright"
-    }).addTo($scope.map);
+    $scope.getMapItems = function() {
+        $scope.mapBounds = $scope.map.getBounds();
+        $scope.getLakes();
+        $scope.getRiversStreams();
+        $scope.getAccessPoints();
+    }
     
+    $scope.getLakes = function() {
+        var params = $scope.lp_search_params;
+        if(angular.isDefined($scope.mapBounds)) {
+           params["gq"] = JSON.stringify($scope.mapBounds);
+        }
+        $http({
+            method: 'GET', 
+            url: $scope.apiURL + "/lakes",
+            params:params
+        }).
+        success(function(data, status, headers, config) {
+            $scope.lakes = data;
+            $scope.lakes_count = Object.keys($scope.lakes).length
+            // always fetch geoms when lakes are updated;
+            if($scope.lakes_count > 0){
+                $scope.updateLakeGeoms();
+            }
+        }).
+        error(function(data, status, headers, config) {
+            console.log(data, status);
+        });
+    }
+
     $scope.updateLakeGeoms = function() {
         $scope.gids = []; // we use this too create chunks
         $scope.loadedGeoms = 0;
@@ -134,6 +142,63 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
             });
         }
     }
+
+    /*
+    // add events for the overlays
+    $scope.map.on('overlayadd', function(layer) {
+        if(layer.name == "Public Fishing Access") {
+            $scope.pub_fish_acc_available = true;
+        }
+        if(layer.name == "Lakes and Ponds") {
+            $scope.lakes_ponds_available = true;
+        }
+        $timeout(function(){
+            $scope.$apply();
+        }, 100);
+
+    });
+
+    $scope.map.on('overlayremove', function(layer) {
+        if(layer.name == "Public Fishing Access") {
+            $scope.pub_fish_acc_available = false;
+        }
+        if(layer.name == "Lakes and Ponds") {
+            $scope.lakes_ponds_available = false;
+        }
+        $timeout(function(){
+            $scope.$apply();
+        }, 100);
+    });
+
+    L.control.scale({
+        position: "bottomright"
+    }).addTo($scope.map);
+    */
+
+    $scope.getRiversStreams = function() {
+        var params = $scope.rs_search_params;
+        if(angular.isDefined($scope.mapBounds)) {
+           params["gq"] = JSON.stringify($scope.mapBounds);
+        }
+
+        $http({
+            method: 'GET', 
+            url: $scope.apiURL + "/rivers",
+            params: params
+        }).
+        success(function(data, status, headers, config) {
+            $scope.rivers = data;
+            $scope.rivers_count = Object.keys($scope.rivers).length
+            // always fetch geoms when lakes are updated;
+            if($scope.rivers_count > 0){
+                $scope.updateRiversGeoms();
+            }
+        }).
+        error(function(data, status, headers, config) {
+            console.log(data, status);
+        });
+    }
+
     $scope.updateRiversGeoms = function() {
         $scope.gids = []; // we use this too create chunks
         $scope.loadedGeoms = 0;
@@ -199,7 +264,6 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
         }
     }
 
-    
     $scope.featureClkHandler = function(feature, layer) {
         var props = $scope.lakes[feature.properties.gid.toString()];
 
@@ -235,52 +299,19 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
         layer.bindPopup(popUpStr);
     }
 
-    $scope.getLakes = function() {
-        $http({
-            method: 'GET', 
-            url: $scope.apiURL + "/lakes",
-            params: $scope.lp_search_params
-        }).
-        success(function(data, status, headers, config) {
-            $scope.lakes = data;
-            $scope.lakes_count = Object.keys($scope.lakes).length
-            // always fetch geoms when lakes are updated;
-            if($scope.lakes_count > 0){
-                $scope.updateLakeGeoms();
-            }
-        }).
-        error(function(data, status, headers, config) {
-            console.log(data, status);
-        });
-    }
-
-    $scope.getRiversStreams = function() {
-        $http({
-            method: 'GET', 
-            url: $scope.apiURL + "/rivers",
-            params: $scope.rs_search_params
-        }).
-        success(function(data, status, headers, config) {
-            $scope.rivers = data;
-            $scope.rivers_count = Object.keys($scope.rivers).length
-            // always fetch geoms when lakes are updated;
-            if($scope.rivers_count > 0){
-                $scope.updateRiversGeoms();
-            }
-        }).
-        error(function(data, status, headers, config) {
-            console.log(data, status);
-        });
-    }
-
     $scope.getAccessPoints = function(fitbounds) {
         if(fitbounds == undefined) {
             fitbounds = false;
         }
+        var params = $scope.access_search_params;
+        if(angular.isDefined($scope.mapBounds)) {
+           params["gq"] = JSON.stringify($scope.mapBounds);
+        }
+
         $http({
             method: 'GET',
             url: $scope.apiURL + "/access",
-            params:$scope.access_search_params
+            params: params
         }).
         success(function(data, status, headers, config) {
             $scope.access = data;
@@ -444,7 +475,6 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
         $scope.getAccessPoints();
     }
-    
 
     $scope.toTitleCase = function(str){
         return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
@@ -481,9 +511,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
     }
     $scope.resizeMap();
-    $scope.getLakes();
-    $scope.getRiversStreams();
-    $scope.getAccessPoints();
+    $scope.getMapItems();
     
     angular.element(document).ready(function(){
         angular.element( window ).resize(function() {
