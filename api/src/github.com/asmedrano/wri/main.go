@@ -400,7 +400,7 @@ func DamsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 
-    query := `SELECT gid, state_id, nat_id, name, alt_name, dam_type, ST_AsGeoJSON(geom) as geom FROM dams WHERE geom != ''`
+    query := `SELECT gid, COALESCE(state_id, 'N/A'), COALESCE(name, 'No Name'), COALESCE(alt_name, 'N/A'), COALESCE(dam_type, 'UNKNOWN'), ST_AsGeoJSON(geom) as geom FROM dams`
 	query += " ORDER BY name"
 
 	rows, err = db.Query(query)
@@ -414,7 +414,7 @@ func DamsHandler(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		r := resources.DamResource{}
-		if err := rows.Scan(&r.Gid, &r.StateId, &r.NatId, &r.Name, &r.AltName, &r.DamType, &r.Geom); err != nil {
+		if err := rows.Scan(&r.Gid, &r.StateId, &r.Name, &r.AltName, &r.DamType, &r.Geom); err != nil {
 			log.Print(err)
 		}
 		results = append(results, r)

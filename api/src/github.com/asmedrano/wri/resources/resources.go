@@ -225,7 +225,6 @@ Indexes:
 type DamResource struct {
 	Gid      int64
 	StateId  string
-	NatId    string
 	Name     string
 	AltName  string
 	DamType string
