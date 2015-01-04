@@ -25,6 +25,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.map = L.map('map',{zoomControl: false }).setView([41.83, -71.41], 13);
     new L.Control.Zoom({ position: 'topright' }).addTo($scope.map);
     $scope.mapLayers = {};
+    $scope.mapMemLayers = {};
     $scope.w_cat_types = ["1", "2", "3", "4A", "4B", "4C", "5"];
     $scope.typing = null;
 
@@ -49,11 +50,38 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
     $scope.control.addTo($scope.map);
 
+    /*TODO move these to somewhere that makes sense*/
+
+    $scope.disableLayers = function(layer_key) {
+        $scope.mapMemLayers[layer_key] = $scope.mapLayers[layer_key].getLayers();
+        $scope.mapLayers[layer_key].clearLayers();
+    }
+
+    $scope.enableLayers = function(layer_key) {
+
+        for(var i = 0; i< $scope.mapMemLayers[layer_key].length; i++) {
+            $scope.mapLayers[layer_key].addLayer($scope.mapMemLayers[layer_key][i]);
+        }
+    }
+    $scope.map.on('zoomstart', function() {
+        $scope.disableLayers('rs');
+        $scope.disableLayers('lp');
+    });
+
     $scope.map.on('zoomend', function() {
+        $scope.enableLayers('rs');
+        $scope.enableLayers('lp');
         $scope.getMapItems();
+    });
+    
+    $scope.map.on('dragstart', function() {
+        $scope.disableLayers('rs');
+        $scope.disableLayers('lp');
     });
 
     $scope.map.on('dragend', function() {
+        $scope.enableLayers('rs');
+        $scope.enableLayers('lp');
         $scope.getMapItems();
     });
 
