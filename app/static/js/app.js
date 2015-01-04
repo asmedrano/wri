@@ -66,22 +66,32 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.map.on('zoomstart', function() {
         $scope.disableLayers('rs');
         $scope.disableLayers('lp');
+        $scope.disableLayers('dm');
+        $scope.disableLayers('pa');
     });
 
     $scope.map.on('zoomend', function() {
         $scope.enableLayers('rs');
         $scope.enableLayers('lp');
+        $scope.enableLayers('dm');
+        $scope.enableLayers('pa');
+
         $scope.getMapItems();
     });
     
     $scope.map.on('dragstart', function() {
         $scope.disableLayers('rs');
         $scope.disableLayers('lp');
+        $scope.disableLayers('dm');
+        $scope.disableLayers('pa');
     });
 
     $scope.map.on('dragend', function() {
         $scope.enableLayers('rs');
         $scope.enableLayers('lp');
+        $scope.enableLayers('dm');
+        $scope.enableLayers('pa');
+
         $scope.getMapItems();
     });
 
@@ -376,6 +386,76 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
     }
 
+    $scope.getDams = function(fitbounds) {
+        if(fitbounds == undefined) {
+            fitbounds = false;
+        }
+        var params = $scope.dams_search_params;
+
+        $http({
+            method: 'GET',
+            url: $scope.apiURL + "/dams",
+            params: params
+        }).
+        success(function(data, status, headers, config) {
+            $scope.access = data;
+            var layers =[];
+            var feature;
+            for(var i in data) {
+                feature = JSON.parse(data[i].Geom);
+                
+                feature.properties = {
+                    Lat : data[i].Lat,
+                    Lon : data[i].Lon,
+                    Name: data[i].Name,
+                    DamType: data[i].DamType
+                }
+                layers.push(L.geoJson(feature,{
+                    pointToLayer: function (feature, latlng) {
+                        return L.circleMarker(latlng, {
+                            radius: 4,
+                            fillColor: "#7C8381",
+                            color: "#999",
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        });
+                    },
+                    onEachFeature:function(feature, layer){
+                        var str = "<h3>"+feature.properties.Name+ "</h3>"
+                        var latlon = feature.coordinates[1].toString() + "," + feature.coordinates[0].toString();
+
+                        if(feature.properties.DamType != "") {
+                            str += "<small><b>Dam Type: </b>"+ feature.properties.DamType +"</small>";
+                        }
+                        
+                        str += "<small><a target='blank' href='http://maps.google.com/maps?f=q&hl=en&geocode=&q=LATLON&ie=UTF8&z=17&iwloc=addr&om=0'>View On Google Maps</a></small>".replace("LATLON", latlon )
+
+                        layer.bindPopup(str);
+                    }
+                }));    
+            }
+
+            var lp = $scope.getOverlayLayer($scope.control,"Dams");
+            if(lp != null){
+                $scope.control.removeLayer(lp.layer);
+                $scope.map.removeLayer($scope.mapLayers["pa"]);
+            }
+
+            var f = L.featureGroup(layers);
+            $scope.mapLayers['dm'] = f;
+            $scope.control.addOverlay(f, "Dams");
+            $scope.map.addLayer(f);
+            if(fitbounds) {
+                $scope.map.fitBounds(f.getBounds());
+            }
+        }).
+        error(function(data, status, headers, config) {
+            console.log(data, status);
+        });
+
+    }
+
     $scope.hideLakesLayer = function(){
         // uncheck lakes layer
         var e = angular.element(".leaflet-control-layers-selector")
@@ -512,6 +592,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.resizeMap();
     $scope.getMapItems();
     $scope.getAccessPoints();
+    $scope.getDams();
     
     angular.element(document).ready(function(){
         angular.element( window ).resize(function() {
