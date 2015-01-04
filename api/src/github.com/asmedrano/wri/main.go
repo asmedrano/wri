@@ -19,6 +19,7 @@ func main() {
 	r.HandleFunc("/geom", GeomHandler)
 	r.HandleFunc("/access", AccessHandler)
 	r.HandleFunc("/rivers", RiversHandler)
+	r.HandleFunc("/dams", DamsHandler)
 	http.Handle("/", r)
 	fmt.Print("Starting Server...\n")
 	http.ListenAndServe(":8000", nil)
@@ -371,6 +372,49 @@ func AccessHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		r := resources.AccessResource{}
 		if err := rows.Scan(&r.Gid, &r.Id, &r.Name, &r.Rmp_Cns, &r.Rmp_Cnd, &r.Park, &r.Restriction, &r.Uni, &r.Type, &r.Wat_ttp, &r.Lat, &r.Lon, &r.Ownership, &r.Geom); err != nil {
+			log.Print(err)
+		}
+		results = append(results, r)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Print(err)
+	}
+
+	js, err := json.Marshal(results)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(js)
+}
+
+func DamsHandler(w http.ResponseWriter, r *http.Request) {
+	db := tools.GetDB()
+	defer db.Close()
+
+	var rows *sql.Rows
+	var err error
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+
+    query := `SELECT gid, state_id, nat_id, name, alt_name, dam_type, ST_AsGeoJSON(geom) as geom FROM dams WHERE geom != ''`
+	query += " ORDER BY name"
+
+	rows, err = db.Query(query)
+	defer rows.Close()
+
+	results := []resources.DamResource{}
+
+	if err != nil {
+		log.Print(err)
+	}
+
+	for rows.Next() {
+		r := resources.DamResource{}
+		if err := rows.Scan(&r.Gid, &r.StateId, &r.NatId, &r.Name, &r.AltName, &r.DamType, &r.Geom); err != nil {
 			log.Print(err)
 		}
 		results = append(results, r)

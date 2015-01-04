@@ -197,6 +197,37 @@ Indexes:
 // Water Sheds are not queryable. They just aways appear on the map.
 
 type WaterShedResource struct {
-	Gid int64
+	Gid  int64
 	Name string // really this is local_name
+}
+
+/*
+                                  Table "public.dams"
+  Column   |          Type          |                     Modifiers
+-----------+------------------------+----------------------------------------------------
+ gid       | integer                | not null default nextval('dams_gid_seq'::regclass)
+ state_id  | character varying(50)  |
+ nat_id    | character varying(254) |
+ name      | character varying(254) |
+ alt_name  | character varying(254) |
+ dam_type  | character varying(254) |
+ hazard    | character varying(50)  |
+ longitude | numeric                |
+ latitude  | numeric                |
+ qcpj      | character varying(50)  |
+ id_intgr  | integer                |
+ geom      | geometry(Point)        |
+Indexes:
+    "dams_pkey" PRIMARY KEY, btree (gid)
+    "dams_geom_gist" gist (geom)
+
+*/
+type DamResource struct {
+	Gid      int64
+	StateId  string
+	NatId    string
+	Name     string
+	AltName  string
+	DamType string
+	Geom     string
 }
