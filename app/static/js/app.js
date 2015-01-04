@@ -44,7 +44,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
     $scope.control = L.control.layers($scope.baseMaps, $scope.overlays, {
         position:"bottomleft",
-        collapsed: false,
+        collapsed: true,
     });
 
     $scope.control.addTo($scope.map);
