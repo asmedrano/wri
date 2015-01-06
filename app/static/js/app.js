@@ -25,7 +25,12 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.map = L.map('map',{zoomControl: false }).setView([41.83, -71.41], 13);
     new L.Control.Zoom({ position: 'topright' }).addTo($scope.map);
     $scope.mapLayers = {};
-    $scope.mapMemLayers = {};
+    $scope.mapMemLayers = {
+        rs :[],
+        lp :[],
+        dm :[],
+        pa :[]
+    };
     $scope.w_cat_types = ["1", "2", "3", "4A", "4B", "4C", "5"];
     $scope.typing = null;
 
@@ -53,12 +58,10 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     /*TODO move these to somewhere that makes sense*/
 
     $scope.disableLayers = function(layer_key) {
-        $scope.mapMemLayers[layer_key] = $scope.mapLayers[layer_key].getLayers();
         $scope.mapLayers[layer_key].clearLayers();
     }
 
     $scope.enableLayers = function(layer_key) {
-
         for(var i = 0; i< $scope.mapMemLayers[layer_key].length; i++) {
             $scope.mapLayers[layer_key].addLayer($scope.mapMemLayers[layer_key][i]);
         }
@@ -126,6 +129,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
     $scope.updateLakeGeoms = function() {
         var newGids = [];
+        var layer;
         var lp = $scope.getOverlayLayer($scope.control,"Lakes and Ponds");
         if (!$scope.fGroups.hasOwnProperty('lakes')) {
             $scope.fGroups.lakes = L.featureGroup([]);
@@ -152,52 +156,22 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                         name: data[i].Name,
                         gid: data[i].Gid
                     }
-                    $scope.mapLayers['lp'].addLayer(L.geoJson(feature,{
+                    layer = L.geoJson(feature, {
                         style: {
                             "color": "#1E74FF",
                             "weight": 1,
                             "opacity": .8
                         },
                         onEachFeature:$scope.featureClkHandler
-                    }));
+                    });
+                    $scope.mapMemLayers.lp.push(layer);
+                    $scope.mapLayers['lp'].addLayer(layer);
                 }
             }).
             error(function(data, status, headers, config) {
         });
         }
     }
-
-    /*
-    // add events for the overlays
-    $scope.map.on('overlayadd', function(layer) {
-        if(layer.name == "Public Fishing Access") {
-            $scope.pub_fish_acc_available = true;
-        }
-        if(layer.name == "Lakes and Ponds") {
-            $scope.lakes_ponds_available = true;
-        }
-        $timeout(function(){
-            $scope.$apply();
-        }, 100);
-
-    });
-
-    $scope.map.on('overlayremove', function(layer) {
-        if(layer.name == "Public Fishing Access") {
-            $scope.pub_fish_acc_available = false;
-        }
-        if(layer.name == "Lakes and Ponds") {
-            $scope.lakes_ponds_available = false;
-        }
-        $timeout(function(){
-            $scope.$apply();
-        }, 100);
-    });
-
-    L.control.scale({
-        position: "bottomright"
-    }).addTo($scope.map);
-    */
 
     $scope.getRiversStreams = function() {
         var params = $scope.rs_search_params;
@@ -225,6 +199,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
     $scope.updateRiversGeoms = function() {
         var newGids = [];
+        var layer;
         var lp = $scope.getOverlayLayer($scope.control,"Rivers and Streams");
        
         if (!$scope.fGroups.hasOwnProperty('rivers')) {
@@ -254,7 +229,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                         name: data[i].Name,
                         gid: data[i].Gid
                     }
-                    $scope.mapLayers['rs'].addLayer(L.geoJson(feature,{
+                    layer = L.geoJson(feature,{
                         style: {
                             "color": "#1E74FF",
                             "weight": 3,
@@ -265,7 +240,9 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                             popUpStr += "<h3>" + feature.properties.name + "</h3>";
                             layer.bindPopup(popUpStr);
                         }
-                    }));
+                    });
+                    $scope.mapMemLayers.rs.push(layer);
+                    $scope.mapLayers['rs'].addLayer(layer);
                 }
             }).
             error(function(data, status, headers, config) {
@@ -309,6 +286,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     }
 
     $scope.getAccessPoints = function(fitbounds) {
+        var layer;
         if(fitbounds == undefined) {
             fitbounds = false;
         }
@@ -338,7 +316,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                     Lon : data[i].Lon,
                     WaterType : $scope.capitalizeFirstLetter(data[i].Wat_ttp),
                 }
-                layers.push(L.geoJson(feature,{
+                layer = L.geoJson(feature,{
                     onEachFeature:function(feature, layer){
                         var str = "<h3>"+feature.properties.Name+ "</h3>"
                         var latlon = "";
@@ -363,7 +341,9 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                         layer.bindPopup(str);
 
                     }
-                }));    
+                });
+                $scope.mapMemLayers.pa.push(layer);
+                layers.push(layer);
             }
 
             var lp = $scope.getOverlayLayer($scope.control,"Public Fishing Access");
@@ -387,6 +367,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     }
 
     $scope.getDams = function(fitbounds) {
+        var layer;
         if(fitbounds == undefined) {
             fitbounds = false;
         }
@@ -410,7 +391,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                     Name: data[i].Name,
                     DamType: data[i].DamType
                 }
-                layers.push(L.geoJson(feature,{
+                layer = L.geoJson(feature,{
                     pointToLayer: function (feature, latlng) {
                         return L.circleMarker(latlng, {
                             radius: 4,
@@ -433,7 +414,9 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
                         layer.bindPopup(str);
                     }
-                }));    
+                });
+                $scope.mapMemLayers.dm.push(layer);
+                layers.push(layer);
             }
 
             var lp = $scope.getOverlayLayer($scope.control,"Dams");
