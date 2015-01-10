@@ -10,4 +10,4 @@ TODO:
 * enable specific cors
 * minify on deploy
 * Single Search
-* Add Rivers and streams
+* Fishing Records page

@@ -97,6 +97,13 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
 
         $scope.getMapItems();
     });
+    
+    $scope.map.on('popupopen', function(e){
+        var marker = e.popup;
+        var latlng = marker.getLatLng();
+        var coordsText = "<small class='goo-link'><a target='blank' href='http://maps.google.com/maps?f=q&hl=en&geocode=&q=LATLON&ie=UTF8&z=17&iwloc=addr&om=0'>View On Google Maps</a></small>".replace("LATLON", latlng.lat + "," + latlng.lng);
+        marker.setContent(marker.getContent().replace(/<small class='goo-link'>.*<\/small>/g, '') + coordsText);
+    });
 
     $scope.getMapItems = function() {
         $scope.mapBounds = $scope.map.getBounds();
@@ -154,7 +161,8 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                     feature = JSON.parse(data[i].Geom);
                     feature.properties = {
                         name: data[i].Name,
-                        gid: data[i].Gid
+                        gid: data[i].Gid,
+                        centroid: JSON.parse(data[i].Centroid).coordinates
                     }
                     layer = L.geoJson(feature, {
                         style: {
@@ -251,6 +259,8 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     }
 
     $scope.featureClkHandler = function(feature, layer) {
+        var latlng = feature.properties.centroid[1]  + "," + feature.properties.centroid[0];
+        
         var props = $scope.lakes[feature.properties.gid.toString()];
 
         var popUpStr = "";
@@ -281,7 +291,8 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
             popUpStr += "<small><b>Boat Ramp: No</b></small>";
         }
         popUpStr += "<small><b>Restrictions:</b> " + props.Restriction + "</small>";
-
+        
+        
         layer.bindPopup(popUpStr);
     }
 
@@ -336,7 +347,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                             str += "<small><b>Water Type: </b>"+ feature.properties.WaterType +"</small>";
                         }
                         latlon = feature.properties.Lat.toString() + "," + feature.properties.Lon.toString();
-                        str += "<small><a target='blank' href='http://maps.google.com/maps?f=q&hl=en&geocode=&q=LATLON&ie=UTF8&z=17&iwloc=addr&om=0'>View On Google Maps</a></small>".replace("LATLON", latlon )
+                        //str += "<small><a target='blank' href='http://maps.google.com/maps?f=q&hl=en&geocode=&q=LATLON&ie=UTF8&z=17&iwloc=addr&om=0'>View On Google Maps</a></small>".replace("LATLON", latlon )
 
                         layer.bindPopup(str);
 
@@ -410,7 +421,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                             str += "<small><b>Dam Type: </b>"+ feature.properties.DamType +"</small>";
                         }
                         
-                        str += "<small><a target='blank' href='http://maps.google.com/maps?f=q&hl=en&geocode=&q=LATLON&ie=UTF8&z=17&iwloc=addr&om=0'>View On Google Maps</a></small>".replace("LATLON", latlon )
+                        //str += "<small><a target='blank' href='http://maps.google.com/maps?f=q&hl=en&geocode=&q=LATLON&ie=UTF8&z=17&iwloc=addr&om=0'>View On Google Maps</a></small>".replace("LATLON", latlon )
 
                         layer.bindPopup(str);
                     }
