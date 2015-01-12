@@ -56,6 +56,26 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.control.addTo($scope.map);
 
     /*TODO move these to somewhere that makes sense*/
+    $scope.addData = function(l, d) {
+        if ('addData' in l) l.addData(d);
+        if ('setGeoJSON' in l) l.setGeoJSON(d);
+    }
+    
+    $scope.parseTopoJSON = function(data, options, layer){
+        var o = typeof data === 'string' ? JSON.parse(data) : data;
+        layer = layer || L.geoJson();
+        for (var i in o.objects) {
+            var ft = topojson.feature(o, o.objects[i]);
+            ft.properties.gid = data.properties.gid;
+            ft.properties.name = data.properties.name;
+            if (ft.features) {
+                $scope.addData(layer, ft.features);
+            }else{
+                $scope.addData(layer, ft);
+            }
+        }
+        return layer;   
+    }
 
     $scope.disableLayers = function(layer_key) {
         $scope.mapLayers[layer_key].clearLayers();
@@ -66,15 +86,16 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
             $scope.mapLayers[layer_key].addLayer($scope.mapMemLayers[layer_key][i]);
         }
     }
+    
     $scope.map.on('zoomstart', function() {
-        $scope.disableLayers('rs');
+        //$scope.disableLayers('rs');
         $scope.disableLayers('lp');
         $scope.disableLayers('dm');
         $scope.disableLayers('pa');
     });
 
     $scope.map.on('zoomend', function() {
-        $scope.enableLayers('rs');
+        //$scope.enableLayers('rs');
         $scope.enableLayers('lp');
         $scope.enableLayers('dm');
         $scope.enableLayers('pa');
@@ -83,14 +104,14 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     });
     
     $scope.map.on('dragstart', function() {
-        $scope.disableLayers('rs');
+        //$scope.disableLayers('rs');
         $scope.disableLayers('lp');
         $scope.disableLayers('dm');
         $scope.disableLayers('pa');
     });
 
     $scope.map.on('dragend', function() {
-        $scope.enableLayers('rs');
+        //$scope.enableLayers('rs');
         $scope.enableLayers('lp');
         $scope.enableLayers('dm');
         $scope.enableLayers('pa');
@@ -108,7 +129,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.getMapItems = function() {
         $scope.mapBounds = $scope.map.getBounds();
         $scope.getLakes();
-        $scope.getRiversStreams();
+        //$scope.getRiversStreams();
     }
     
     $scope.getLakes = function() {
@@ -161,10 +182,11 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                     feature = JSON.parse(data[i].Geom);
                     feature.properties = {
                         name: data[i].Name,
-                        gid: data[i].Gid,
-                        centroid: JSON.parse(data[i].Centroid).coordinates
+                        gid: data[i].Gid
+                        //centroid: JSON.parse(data[i].Centroid).coordinates
                     }
-                    layer = L.geoJson(feature, {
+                    
+                    var cust_layer = L.geoJson(null, {
                         style: {
                             "color": "#1E74FF",
                             "weight": 1,
@@ -172,6 +194,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                         },
                         onEachFeature:$scope.featureClkHandler
                     });
+                    layer = $scope.parseTopoJSON(feature, null, cust_layer );
                     $scope.mapMemLayers.lp.push(layer);
                     $scope.mapLayers['lp'].addLayer(layer);
                 }
@@ -259,8 +282,6 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     }
 
     $scope.featureClkHandler = function(feature, layer) {
-        var latlng = feature.properties.centroid[1]  + "," + feature.properties.centroid[0];
-        
         var props = $scope.lakes[feature.properties.gid.toString()];
 
         var popUpStr = "";
