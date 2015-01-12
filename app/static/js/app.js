@@ -88,14 +88,14 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     }
     
     $scope.map.on('zoomstart', function() {
-        //$scope.disableLayers('rs');
+        $scope.disableLayers('rs');
         $scope.disableLayers('lp');
         $scope.disableLayers('dm');
         $scope.disableLayers('pa');
     });
 
     $scope.map.on('zoomend', function() {
-        //$scope.enableLayers('rs');
+        $scope.enableLayers('rs');
         $scope.enableLayers('lp');
         $scope.enableLayers('dm');
         $scope.enableLayers('pa');
@@ -104,14 +104,14 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     });
     
     $scope.map.on('dragstart', function() {
-        //$scope.disableLayers('rs');
+        $scope.disableLayers('rs');
         $scope.disableLayers('lp');
         $scope.disableLayers('dm');
         $scope.disableLayers('pa');
     });
 
     $scope.map.on('dragend', function() {
-        //$scope.enableLayers('rs');
+        $scope.enableLayers('rs');
         $scope.enableLayers('lp');
         $scope.enableLayers('dm');
         $scope.enableLayers('pa');
@@ -129,7 +129,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.getMapItems = function() {
         $scope.mapBounds = $scope.map.getBounds();
         $scope.getLakes();
-        //$scope.getRiversStreams();
+        $scope.getRiversStreams();
     }
     
     $scope.getLakes = function() {
@@ -158,6 +158,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.updateLakeGeoms = function() {
         var newGids = [];
         var layer;
+        var cust_layer;
         var lp = $scope.getOverlayLayer($scope.control,"Lakes and Ponds");
         if (!$scope.fGroups.hasOwnProperty('lakes')) {
             $scope.fGroups.lakes = L.featureGroup([]);
@@ -186,7 +187,7 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                         //centroid: JSON.parse(data[i].Centroid).coordinates
                     }
                     
-                    var cust_layer = L.geoJson(null, {
+                    cust_layer = L.geoJson(null, {
                         style: {
                             "color": "#1E74FF",
                             "weight": 1,
@@ -231,6 +232,8 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
     $scope.updateRiversGeoms = function() {
         var newGids = [];
         var layer;
+        var cust_layer;
+        var feature;
         var lp = $scope.getOverlayLayer($scope.control,"Rivers and Streams");
        
         if (!$scope.fGroups.hasOwnProperty('rivers')) {
@@ -253,14 +256,15 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
             
             $http({method: 'GET', url: $scope.apiURL + "/geom?t=r" + gidsStr}).
             success(function(data, status, headers, config) {
-                var feature = null;
+                feature = null;
                 for(var i in data) {
+                    try {
                     feature = JSON.parse(data[i].Geom);
                     feature.properties = {
                         name: data[i].Name,
                         gid: data[i].Gid
                     }
-                    layer = L.geoJson(feature,{
+                    cust_layer = L.geoJson(null ,{
                         style: {
                             "color": "#1E74FF",
                             "weight": 3,
@@ -272,8 +276,14 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                             layer.bindPopup(popUpStr);
                         }
                     });
+
+                    layer = $scope.parseTopoJSON(feature, null, cust_layer);
+
                     $scope.mapMemLayers.rs.push(layer);
                     $scope.mapLayers['rs'].addLayer(layer);
+                    }catch(e) {
+                        //.. sometimes Geom == ""
+                    }
                 }
             }).
             error(function(data, status, headers, config) {
@@ -368,7 +378,6 @@ app.controller('MapCtrl', function ($scope, $http, $timeout, $interval) {
                             str += "<small><b>Water Type: </b>"+ feature.properties.WaterType +"</small>";
                         }
                         latlon = feature.properties.Lat.toString() + "," + feature.properties.Lon.toString();
-                        //str += "<small><a target='blank' href='http://maps.google.com/maps?f=q&hl=en&geocode=&q=LATLON&ie=UTF8&z=17&iwloc=addr&om=0'>View On Google Maps</a></small>".replace("LATLON", latlon )
 
                         layer.bindPopup(str);
 
